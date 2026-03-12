@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/700.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    --background: #0f0f0f;
+    --foreground: #f5f5f5;
+    --card: #1a1a1a;
+    --card-foreground: #f5f5f5;
+    --primary: #4CAF50;
+    --primary-foreground: #ffffff;
+    --muted: #262626;
+    --muted-foreground: #9ca3af;
+    --accent: #4CAF50;
+    --border: rgba(255,255,255,0.08);
+    --input: rgba(255,255,255,0.06);
+    --ring: #4CAF50;
+    --radius: 0.75rem;
+}
+
+@theme inline {
+    --font-sans: 'Geist Variable', sans-serif;
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-primary: var(--primary);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-border: var(--border);
+    --color-ring: var(--ring);
+    --radius-lg: var(--radius);
+}
+
+@layer base {
+    * { box-sizing: border-box; }
+    body {
+        background-color: #0f0f0f;
+        color: #f5f5f5;
+        font-family: 'Geist Variable', sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #2d5a31; border-radius: 2px; }
+}
+
+.font-serif { font-family: 'Playfair Display', serif; }
+
+.glass {
+    background: rgba(26,26,26,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(76,175,80,0.1);
+}
+.glass-strong {
+    background: rgba(17,17,17,0.9);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(76,175,80,0.15);
+}
+
+.gradient-green { background: linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C); }
+.text-gradient {
+    background: linear-gradient(135deg,#4CAF50,#81C784);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.animate-fade-in { animation: fadeIn 0.35s ease forwards; }
+@keyframes fadeIn {
+    from { opacity:0; transform: translateY(-8px); }
+    to { opacity:1; transform: translateY(0); }
+}
+
+.card-hover {
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.card-hover:hover {
+    transform: translateY(-3px);
+    border-color: rgba(76,175,80,0.25) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(76,175,80,0.08);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+.sidebar-link:hover { background: rgba(76,175,80,0.07); color: #d1d5db; }
+.sidebar-link.active {
+    background: rgba(76,175,80,0.1);
+    color: #4CAF50;
+    border-color: rgba(76,175,80,0.2);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg,#2E7D32,#388E3C);
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid rgba(76,175,80,0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg,#388E3C,#43A047);
+    box-shadow: 0 4px 20px rgba(76,175,80,0.25);
+    transform: translateY(-1px);
+}
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.04);
+    color: #d1d5db;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.08); color: #f5f5f5; }
+
+.input-dark {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #f5f5f5;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: 'Geist Variable', sans-serif;
+}
+.input-dark:focus {
+    border-color: rgba(76,175,80,0.5);
+    background: rgba(76,175,80,0.04);
+    box-shadow: 0 0 0 3px rgba(76,175,80,0.08);
+}
+.input-dark::placeholder { color: #4b5563; }
+
+.select-dark {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #f5f5f5;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: 'Geist Variable', sans-serif;
+    cursor: pointer;
+}
+.select-dark:focus { border-color: rgba(76,175,80,0.5); box-shadow: 0 0 0 3px rgba(76,175,80,0.08); }
+.select-dark option { background: #1a1a1a; color: #f5f5f5; }
+
+.radio-custom { accent-color: #4CAF50; width: 16px; height: 16px; cursor: pointer; }
+.checkbox-custom { accent-color: #4CAF50; width: 16px; height: 16px; cursor: pointer; }
+
+.progress-bar { background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; height: 6px; }
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#2E7D32,#4CAF50);
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.tag-green { background: rgba(76,175,80,0.12); color: #4CAF50; border: 1px solid rgba(76,175,80,0.2); }
+.tag-blue { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+.tag-amber { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+.tag-purple { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+
+@keyframes pulseGreen {
+    0%,100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(76,175,80,0); }
+}
+.animate-pulse-green { animation: pulseGreen 2s ease-in-out infinite; }
