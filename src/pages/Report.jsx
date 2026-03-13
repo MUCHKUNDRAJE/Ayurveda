@@ -342,6 +342,307 @@ function GenderBarChart() {
   );
 }
 
+// ── 4. Medical Conditions Dashboard data ────────────────────────────────────
+const CATEGORIES = [
+  {
+    id: "medicine",
+    title: "Medicine / Panchakarma",
+    icon: "💊",
+    color: "#6366F1",
+    lightColor: "#EEF2FF",
+    data: [
+      { name: "Diabetes", value: 142 },
+      { name: "Hypertension", value: 118 },
+      { name: "Asthama", value: 87 },
+      { name: "Heart Disease", value: 64 },
+      { name: "Paralysis", value: 39 },
+      { name: "Breathlessness / Weakness", value: 73 },
+      { name: "Skin Disease", value: 95 },
+      { name: "Obesity", value: 81 },
+      { name: "Acidity / Hyper Acidity", value: 109 },
+      { name: "Arthritis / Knee / Back Pain", value: 126 },
+      { name: "Thyroid", value: 58 },
+    ],
+  },
+  {
+    id: "surgery",
+    title: "Surgery",
+    icon: "🔬",
+    color: "#F59E0B",
+    lightColor: "#FFFBEB",
+    data: [
+      { name: "Urine Disorder", value: 47 },
+      { name: "Hernia", value: 62 },
+      { name: "Hydrocele", value: 34 },
+      { name: "Cyst", value: 28 },
+      { name: "Kidney Stone", value: 91 },
+      { name: "Piles / Haemorrhoids", value: 74 },
+      { name: "Fistula", value: 43 },
+      { name: "Corn", value: 19 },
+      { name: "Diabetic Wounds / Venous Ulcers", value: 55 },
+    ],
+  },
+  {
+    id: "gynecology",
+    title: "Gynecology",
+    icon: "🌸",
+    color: "#EC4899",
+    lightColor: "#FDF2F8",
+    data: [
+      { name: "Menstrual Disorder", value: 103 },
+      { name: "Abnormal Vaginal Bleeding", value: 67 },
+      { name: "Uterine Prolapse", value: 41 },
+      { name: "Infertility", value: 89 },
+      { name: "White Discharge", value: 76 },
+      { name: "Cyst in a Breast", value: 53 },
+      { name: "PCOD", value: 118 },
+      { name: "ANC", value: 94 },
+    ],
+  },
+  {
+    id: "pediatrics",
+    title: "Pediatrics",
+    icon: "👶",
+    color: "#10B981",
+    lightColor: "#ECFDF5",
+    data: [
+      { name: "Allergic Rhinitis", value: 82 },
+      { name: "Malnourish Children", value: 56 },
+      { name: "Difficulty in Speech", value: 31 },
+      { name: "Convulsions", value: 27 },
+      { name: "Not Gaining Weight", value: 69 },
+      { name: "Cerebral Palsy", value: 18 },
+      { name: "Obesity in Children", value: 44 },
+      { name: "Mentally Deficient", value: 22 },
+      { name: "Other", value: 35 },
+    ],
+  },
+  {
+    id: "ent",
+    title: "Ophthalmology & ENT",
+    icon: "👁️",
+    color: "#0EA5E9",
+    lightColor: "#F0F9FF",
+    data: [
+      { name: "Diminished Vision", value: 88 },
+      { name: "Discharge from Eye", value: 52 },
+      { name: "Sqint", value: 37 },
+      { name: "Pterygium", value: 29 },
+      { name: "Ear Discharge", value: 61 },
+      { name: "DNS", value: 43 },
+      { name: "Migraine", value: 74 },
+    ],
+  },
+];
+
+function CategoryChart({ category, isVisible }) {
+  const chartRef = useRef(null);
+  const instanceRef = useRef(null);
+
+  useEffect(() => {
+    if (!isVisible || !chartRef.current || !window.Highcharts) return;
+    const H = window.Highcharts;
+    const sorted = [...category.data].sort((a, b) => b.value - a.value);
+    instanceRef.current = H.chart(chartRef.current, {
+      chart: {
+        type: "bar",
+        backgroundColor: "transparent",
+        style: { fontFamily: "'Outfit', sans-serif" },
+        animation: { duration: 700 },
+        spacing: [0, 10, 0, 0],
+        height: Math.max(300, sorted.length * 38 + 40),
+      },
+      title: { text: null },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      xAxis: {
+        categories: sorted.map((d) => d.name),
+        lineWidth: 0,
+        tickWidth: 0,
+        labels: { style: { color: "#64748B", fontSize: "12px", fontWeight: "500" }, align: "right" },
+      },
+      yAxis: {
+        min: 0,
+        title: { text: null },
+        gridLineColor: "#F1F5F9",
+        gridLineDashStyle: "Dash",
+        labels: { style: { color: "#94A3B8", fontSize: "11px" } },
+      },
+      tooltip: {
+        backgroundColor: "#1E293B",
+        borderWidth: 0,
+        borderRadius: 8,
+        shadow: false,
+        formatter: function () {
+          return `<span style="color:#94A3B8;font-size:11px">${this.key}</span><br/><b style="color:#F8FAFC;font-size:15px">${this.y} patients</b>`;
+        },
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 5,
+          borderWidth: 0,
+          dataLabels: {
+            enabled: true,
+            format: "{y}",
+            style: { fontSize: "11px", fontWeight: "600", color: "#475569", textOutline: "none" },
+          },
+          color: {
+            linearGradient: { x1: 0, x2: 1, y1: 0, y2: 0 },
+            stops: [[0, category.color + "99"], [1, category.color]],
+          },
+          states: { hover: { color: category.color, brightness: 0.1 } },
+          pointPadding: 0.08,
+          groupPadding: 0.05,
+        },
+      },
+      series: [{ name: "Patients", data: sorted.map((d) => d.value) }],
+    });
+    return () => { if (instanceRef.current) instanceRef.current.destroy(); };
+  }, [isVisible, category]);
+
+  const total = category.data.reduce((s, d) => s + d.value, 0);
+  const topCondition = [...category.data].sort((a, b) => b.value - a.value)[0];
+
+  return (
+    <div
+      className="bg-white rounded-2xl overflow-hidden"
+      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9" }}
+    >
+      {/* Card Header */}
+      <div className="px-6 py-5" style={{ background: `linear-gradient(135deg, ${category.lightColor}, white)` }}>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: category.color + "18" }}>
+              {category.icon}
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-base leading-tight">{category.title}</h3>
+              <p className="text-xs text-gray-400 mt-0.5">{category.data.length} conditions tracked</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="text-right">
+              <p className="text-xs text-gray-400 font-medium">Total</p>
+              <p className="text-xl font-bold" style={{ color: category.color }}>{total.toLocaleString()}</p>
+            </div>
+            <div className="w-px h-10 self-center" style={{ background: category.color + "30" }} />
+            <div className="text-right max-w-[140px]">
+              <p className="text-xs text-gray-400 font-medium">Top Condition</p>
+              <p className="text-sm font-semibold text-gray-700 leading-tight mt-0.5 truncate" title={topCondition.name}>{topCondition.name}</p>
+            </div>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="mt-4 flex gap-1">
+          {[...category.data].sort((a, b) => b.value - a.value).slice(0, 5).map((d, i) => (
+            <div key={d.name} className="h-1.5 rounded-full flex-1" style={{ background: category.color, opacity: 1 - i * 0.15 }} title={d.name} />
+          ))}
+          <div className="h-1.5 rounded-full" style={{ background: "#E2E8F0", width: `${(category.data.length - 5) * 12}px` }} />
+        </div>
+      </div>
+      {/* Chart */}
+      <div className="px-2 pb-4">
+        <div ref={chartRef} />
+      </div>
+    </div>
+  );
+}
+
+function MedicalConditionsDashboard() {
+  const [visibleCharts, setVisibleCharts] = useState(new Set());
+  const [activeTab, setActiveTab] = useState("all");
+  const catRefs = useRef({});
+
+  useEffect(() => {
+    const observers = [];
+    CATEGORIES.forEach((cat) => {
+      const el = catRefs.current[cat.id];
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setVisibleCharts((prev) => new Set([...prev, cat.id])); },
+        { threshold: 0.1 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  const totalPatients = CATEGORIES.flatMap((c) => c.data).reduce((s, d) => s + d.value, 0);
+  const totalConditions = CATEGORIES.flatMap((c) => c.data).length;
+  const filtered = activeTab === "all" ? CATEGORIES : CATEGORIES.filter((c) => c.id === activeTab);
+
+  return (
+    <div className="mt-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
+      {/* Hero Header */}
+      <div
+        className="px-6 md:px-10 pt-8 pb-7 rounded-2xl"
+        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)" }}
+      >
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-2">Patient Analytics Dashboard</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-tight" style={{ letterSpacing: "-0.02em" }}>
+              Disease Condition{" "}
+              <span style={{ background: "linear-gradient(90deg, #818CF8, #C084FC, #FB7185)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Overview Report
+              </span>
+            </h2>
+            <p className="text-slate-400 mt-2 text-xs max-w-lg">Patient distribution across all medical departments and specializations. Sorted by case volume.</p>
+          </div>
+          <div className="flex gap-4 flex-wrap">
+            {[
+              { label: "Total Patients", value: totalPatients.toLocaleString(), color: "#818CF8" },
+              { label: "Conditions", value: totalConditions, color: "#34D399" },
+              { label: "Departments", value: CATEGORIES.length, color: "#FB7185" },
+            ].map((kpi) => (
+              <div key={kpi.label} className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-center backdrop-blur-sm">
+                <p className="text-xl font-bold" style={{ color: kpi.color }}>{kpi.value}</p>
+                <p className="text-xs text-slate-400 mt-0.5 font-medium">{kpi.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mt-7 flex-wrap">
+          <button
+            onClick={() => setActiveTab("all")}
+            className="px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
+            style={{ background: activeTab === "all" ? "#6366F1" : "transparent", color: activeTab === "all" ? "#fff" : "#94A3B8", border: `1px solid ${activeTab === "all" ? "#6366F1" : "#334155"}` }}
+          >
+            All Departments
+          </button>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveTab(cat.id)}
+              className="px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
+              style={{ background: activeTab === cat.id ? cat.color : "transparent", color: activeTab === cat.id ? "#fff" : "#94A3B8", border: `1px solid ${activeTab === cat.id ? cat.color : "#334155"}` }}
+            >
+              {cat.icon} {cat.title}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="py-6">
+        <div className={`grid gap-6 ${activeTab === "all" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+          {filtered.map((cat) => (
+            <div key={cat.id} ref={(el) => (catRefs.current[cat.id] = el)}>
+              <CategoryChart category={cat} isVisible={visibleCharts.has(cat.id)} />
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-xs text-slate-400">Data reflects patient intake records. Values represent case counts per condition.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 4. Sankey-style Flow ──────────────────────────────────────────────────────
 function FlowChart() {
   const bands = [
@@ -430,6 +731,9 @@ export default function Report() {
           </Card>
 
         </div>
+
+        {/* Disease Conditions Dashboard */}
+        <MedicalConditionsDashboard />
       </main>
     </div>
   );
