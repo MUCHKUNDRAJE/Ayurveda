@@ -1,5 +1,5 @@
 import MedicineTable from "@/components/shared/TableMed";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 // ── Load Highcharts from CDN ──────────────────────────────────────────────────
@@ -23,6 +23,23 @@ const depts = [
   { name: "Ophthalmology & ENT",    y:  8, color: DEPT_COLORS[4] },
   { name: "Other",                  y:  4, color: DEPT_COLORS[5] },
 ];
+
+// ── Gender data for bar chart ─────────────────────────────────────────────────
+const GENDER_DATA = [
+  { category: "Medicine / Panchakarma", male: 55, female: 45 },
+  { category: "Surgery",                male: 68, female: 32 },
+  { category: "Gynecology",             male: 20, female: 80 },
+  { category: "Pediatrics",             male: 48, female: 52 },
+  { category: "Ophthalmology & ENT",    male: 57, female: 43 },
+  { category: "Other",                  male: 50, female: 50 },
+];
+
+const SUMMARY = {
+  totalMale: 4820,
+  totalFemale: 3640,
+  malePercent: 57,
+  femalePercent: 43,
+};
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────
 const Card = ({ children, className = "" }) => (
@@ -92,7 +109,7 @@ function DeptPieChart() {
   );
 }
 
-// ── 2. Highcharts Grouped Bar ─────────────────────────────────────────────────
+// ── 2. Highcharts Grouped Bar (Monthly) ───────────────────────────────────────
 function MonthlyBarChart() {
   const ref = useRef(null);
   useHighcharts((HC) => {
@@ -127,7 +144,205 @@ function MonthlyBarChart() {
   return <div ref={ref} className="w-full" />;
 }
 
-// ── 3. Sankey-style Flow ──────────────────────────────────────────────────────
+// ── 3. Gender Bar Chart (Male vs Female) ──────────────────────────────────────
+function GenderBarChart() {
+  const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const [activeFilter, setActiveFilter] = useState("All");
+
+  const filters = ["All", "Male", "Female"];
+
+  useHighcharts((HC) => {
+    if (!chartRef.current) return;
+
+    const maleColor = "#3B82F6";
+    const femaleColor = "#EC4899";
+
+    const series = [];
+    if (activeFilter === "All" || activeFilter === "Male") {
+      series.push({
+        name: "Male",
+        data: GENDER_DATA.map((d) => d.male),
+        color: maleColor,
+        borderRadius: 6,
+        borderWidth: 0,
+      });
+    }
+    if (activeFilter === "All" || activeFilter === "Female") {
+      series.push({
+        name: "Female",
+        data: GENDER_DATA.map((d) => d.female),
+        color: femaleColor,
+        borderRadius: 6,
+        borderWidth: 0,
+      });
+    }
+
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    chartInstanceRef.current = HC.chart(chartRef.current, {
+      chart: {
+        type: "bar",
+        backgroundColor: "transparent",
+        animation: { duration: 600 },
+        spacing: [10, 10, 10, 10],
+        height: 260,
+      },
+      title: { text: null },
+      credits: { enabled: false },
+      legend: {
+        enabled: true,
+        align: "right",
+        verticalAlign: "top",
+        itemStyle: { color: "#6B7280", fontWeight: "500", fontSize: "11px" },
+        symbolRadius: 4,
+        symbolWidth: 10,
+        symbolHeight: 10,
+      },
+      xAxis: {
+        categories: GENDER_DATA.map((d) => d.category),
+        lineColor: "#F3F4F6",
+        tickColor: "transparent",
+        labels: { style: { color: "#6B7280", fontSize: "10px", fontWeight: "500" } },
+      },
+      yAxis: {
+        min: 0,
+        max: 100,
+        title: { text: null },
+        gridLineColor: "#F3F4F6",
+        gridLineDashStyle: "Dash",
+        labels: {
+          format: "{value}%",
+          style: { color: "#9CA3AF", fontSize: "10px" },
+        },
+        tickAmount: 6,
+      },
+      tooltip: {
+        shared: true,
+        backgroundColor: "#111827",
+        borderWidth: 0,
+        borderRadius: 10,
+        shadow: false,
+        style: { color: "#F9FAFB", fontSize: "12px" },
+        formatter: function () {
+          let s = `<b style="font-size:13px;color:#F9FAFB">${this.x}</b><br/>`;
+          this.points.forEach((p) => {
+            const icon = p.series.name === "Male" ? "♂" : "♀";
+            s += `<span style="color:${p.color}">${icon} ${p.series.name}</span>: <b>${p.y}%</b><br/>`;
+          });
+          return s;
+        },
+      },
+      plotOptions: {
+        bar: {
+          grouping: true,
+          groupPadding: 0.12,
+          pointPadding: 0.08,
+          dataLabels: {
+            enabled: true,
+            format: "{y}%",
+            style: { fontSize: "10px", fontWeight: "600", color: "#374151", textOutline: "none" },
+          },
+        },
+        series: { animation: { duration: 700 } },
+      },
+      series,
+    });
+  });
+
+  // Re-render chart when filter changes
+  useEffect(() => {
+    if (!chartRef.current || !window.Highcharts) return;
+    const HC = window.Highcharts;
+    const maleColor = "#3B82F6";
+    const femaleColor = "#EC4899";
+    const series = [];
+    if (activeFilter === "All" || activeFilter === "Male") {
+      series.push({ name: "Male", data: GENDER_DATA.map((d) => d.male), color: maleColor, borderRadius: 6, borderWidth: 0 });
+    }
+    if (activeFilter === "All" || activeFilter === "Female") {
+      series.push({ name: "Female", data: GENDER_DATA.map((d) => d.female), color: femaleColor, borderRadius: 6, borderWidth: 0 });
+    }
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+    chartInstanceRef.current = HC.chart(chartRef.current, {
+      chart: { type: "bar", backgroundColor: "transparent", animation: { duration: 600 }, spacing: [10,10,10,10], height: 260 },
+      title: { text: null },
+      credits: { enabled: false },
+      legend: { enabled: true, align: "right", verticalAlign: "top", itemStyle: { color: "#6B7280", fontWeight: "500", fontSize: "11px" }, symbolRadius: 4, symbolWidth: 10, symbolHeight: 10 },
+      xAxis: { categories: GENDER_DATA.map((d) => d.category), lineColor: "#F3F4F6", tickColor: "transparent", labels: { style: { color: "#6B7280", fontSize: "10px", fontWeight: "500" } } },
+      yAxis: { min: 0, max: 100, title: { text: null }, gridLineColor: "#F3F4F6", gridLineDashStyle: "Dash", labels: { format: "{value}%", style: { color: "#9CA3AF", fontSize: "10px" } }, tickAmount: 6 },
+      tooltip: {
+        shared: true, backgroundColor: "#111827", borderWidth: 0, borderRadius: 10, shadow: false,
+        style: { color: "#F9FAFB", fontSize: "12px" },
+        formatter: function () {
+          let s = `<b style="font-size:13px;color:#F9FAFB">${this.x}</b><br/>`;
+          this.points.forEach((p) => {
+            const icon = p.series.name === "Male" ? "♂" : "♀";
+            s += `<span style="color:${p.color}">${icon} ${p.series.name}</span>: <b>${p.y}%</b><br/>`;
+          });
+          return s;
+        },
+      },
+      plotOptions: { bar: { grouping: true, groupPadding: 0.12, pointPadding: 0.08, dataLabels: { enabled: true, format: "{y}%", style: { fontSize: "10px", fontWeight: "600", color: "#374151", textOutline: "none" } } }, series: { animation: { duration: 700 } } },
+      series,
+    });
+  }, [activeFilter]);
+
+  return (
+    <div>
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start mb-3 w-fit">
+        {filters.map((f) => (
+          <button
+            key={f}
+            onClick={() => setActiveFilter(f)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+              activeFilter === f ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {/* KPI Summary */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="bg-blue-50 rounded-xl p-3">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-blue-500 text-base">♂</span>
+            <span className="text-xs font-semibold text-blue-500">Male</span>
+          </div>
+          <p className="text-xl font-bold text-blue-700">{SUMMARY.malePercent}%</p>
+          <p className="text-xs text-blue-400 mt-0.5">{SUMMARY.totalMale.toLocaleString()} pts</p>
+        </div>
+        <div className="bg-pink-50 rounded-xl p-3">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-pink-500 text-base">♀</span>
+            <span className="text-xs font-semibold text-pink-500">Female</span>
+          </div>
+          <p className="text-xl font-bold text-pink-600">{SUMMARY.femalePercent}%</p>
+          <p className="text-xs text-pink-400 mt-0.5">{SUMMARY.totalFemale.toLocaleString()} pts</p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-3">
+          <p className="text-xs font-semibold text-gray-400 mb-1">Ratio</p>
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-blue-500 to-pink-500 rounded-full" style={{ width: `${SUMMARY.malePercent}%` }} />
+          </div>
+          <p className="text-xs text-gray-600 mt-1 font-semibold">{SUMMARY.malePercent}:{SUMMARY.femalePercent}</p>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div ref={chartRef} style={{ height: "260px", width: "100%" }} />
+    </div>
+  );
+}
+
+// ── 4. Sankey-style Flow ──────────────────────────────────────────────────────
 function FlowChart() {
   const bands = [
     { color:"#6abf6a", t:8,  b:4,  mt:32, mb:21, et:60, eb:12 },
@@ -147,7 +362,7 @@ function FlowChart() {
   );
 }
 
-// ── 4. Trend data ─────────────────────────────────────────────────────────────
+// ── 5. Trend data ─────────────────────────────────────────────────────────────
 const trendData = [
   {x:0,dev:5,inv:8,bah:15},{x:1,dev:8,inv:12,bah:18},{x:2,dev:12,inv:15,bah:20},
   {x:3,dev:20,inv:20,bah:22},{x:4,dev:30,inv:28,bah:24},{x:5,dev:37,inv:35,bah:26},
@@ -168,11 +383,8 @@ export default function Report() {
   return (
     <div className="flex min-h-screen bg-slate-200 rounded-2xl p-2 font-sans text-gray-900 text-[13px]">
 
-      {/* ── Sidebar ── */}
-    
-
       {/* ── Main ── */}
-      <main className="flex-1 p-6 overflow-y-auto ">
+      <main className="flex-1 p-6 overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -205,19 +417,17 @@ export default function Report() {
             <DeptPieChart />
           </Card>
 
-          {/* Card 2 — Bar */}
+          {/* Card 2 — Monthly Bar */}
           <Card>
             <CardHeader title="Monthly Entries (Jan – Dec)" />
             <MonthlyBarChart />
           </Card>
- 
 
-       {/* <Card className="w-90">
-           <MedicineTable/>
-       </Card> */}
-   
-        
-      
+          {/* Card 3 — Gender Bar Chart */}
+          <Card className="col-span-2">
+            <CardHeader title="Patient Gender Distribution by Department" />
+            <GenderBarChart />
+          </Card>
 
         </div>
       </main>
