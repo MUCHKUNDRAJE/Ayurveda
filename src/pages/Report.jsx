@@ -1,4 +1,5 @@
 import MedicineTable from "@/components/shared/TableMed";
+import { Baby, Building, Eye, Flower, Microscope, Pill, PillBottleIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -347,7 +348,7 @@ const CATEGORIES = [
   {
     id: "medicine",
     title: "Medicine / Panchakarma",
-    icon: "💊",
+    icon: <PillBottleIcon/>,
     color: "#6366F1",
     lightColor: "#EEF2FF",
     data: [
@@ -367,7 +368,7 @@ const CATEGORIES = [
   {
     id: "surgery",
     title: "Surgery",
-    icon: "🔬",
+    icon:<Microscope/>,
     color: "#F59E0B",
     lightColor: "#FFFBEB",
     data: [
@@ -385,7 +386,7 @@ const CATEGORIES = [
   {
     id: "gynecology",
     title: "Gynecology",
-    icon: "🌸",
+    icon:<Flower/>,
     color: "#EC4899",
     lightColor: "#FDF2F8",
     data: [
@@ -402,7 +403,7 @@ const CATEGORIES = [
   {
     id: "pediatrics",
     title: "Pediatrics",
-    icon: "👶",
+    icon: <Baby/>,
     color: "#10B981",
     lightColor: "#ECFDF5",
     data: [
@@ -420,7 +421,7 @@ const CATEGORIES = [
   {
     id: "ent",
     title: "Ophthalmology & ENT",
-    icon: "👁️",
+    icon: <Eye/>,
     color: "#0EA5E9",
     lightColor: "#F0F9FF",
     data: [
@@ -577,7 +578,7 @@ function MedicalConditionsDashboard() {
       {/* Hero Header */}
       <div
         className="px-6 md:px-10 pt-8 pb-7 rounded-2xl"
-        style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)" }}
+        style={{ background: "linear-gradient(135deg, #0d3a2d 0%, #0d3a2d 60%, #1a2e26 100%)" }}
       >
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
@@ -608,17 +609,19 @@ function MedicalConditionsDashboard() {
         <div className="flex gap-2 mt-7 flex-wrap">
           <button
             onClick={() => setActiveTab("all")}
-            className="px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
-            style={{ background: activeTab === "all" ? "#6366F1" : "transparent", color: activeTab === "all" ? "#fff" : "#94A3B8", border: `1px solid ${activeTab === "all" ? "#6366F1" : "#334155"}` }}
+            className="px-4 py-1.5 rounded-xl flex items-center justify-center gap-1 text-xs font-semibold transition-all duration-200"
+            style={{ background: activeTab === "all" ? "#6366F1" : "white", color: activeTab === "all" ? "#fff" : "gray", border: `1px solid ${activeTab === "all" ? "#6366F1" : "#334155"}` }}
           >
+            <Building/>
             All Departments
           </button>
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveTab(cat.id)}
-              className="px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
-              style={{ background: activeTab === cat.id ? cat.color : "transparent", color: activeTab === cat.id ? "#fff" : "#94A3B8", border: `1px solid ${activeTab === cat.id ? cat.color : "#334155"}` }}
+              className="px-4 flex items-center justify-center gap-2 cursor-pointer shadow-black  bg-white py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
+              style={{ background: activeTab === cat.id ? cat.color : "white", color: activeTab === cat.id ? "#fff" : "gray", border: `1px solid ${activeTab === cat.id ? cat.color : "#334155"}` }}
+            
             >
               {cat.icon} {cat.title}
             </button>
@@ -629,11 +632,17 @@ function MedicalConditionsDashboard() {
       {/* Charts Grid */}
       <div className="py-6">
         <div className={`grid gap-6 ${activeTab === "all" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
-          {filtered.map((cat) => (
-            <div key={cat.id} ref={(el) => (catRefs.current[cat.id] = el)}>
-              <CategoryChart category={cat} isVisible={visibleCharts.has(cat.id)} />
-            </div>
-          ))}
+          {activeTab === "all"
+            ? filtered.map((cat) => (
+                <div key={cat.id} className="bg-white rounded-2xl p-4 shadow" ref={(el) => (catRefs.current[cat.id] = el)}>
+                  <CategoryChart category={cat} isVisible={visibleCharts.has(cat.id)} />
+                </div>
+              ))
+            : filtered.map((cat) => (
+                <div key={cat.id} className="bg-white rounded-2xl p-4 shadow" ref={(el) => (catRefs.current[cat.id] = el)}>
+                  <CategoryChart category={cat} isVisible={visibleCharts.has(cat.id)} />
+                </div>
+              ))}
         </div>
         <div className="mt-8 text-center">
           <p className="text-xs text-slate-400">Data reflects patient intake records. Values represent case counts per condition.</p>
