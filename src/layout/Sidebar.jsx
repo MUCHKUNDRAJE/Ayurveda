@@ -1,12 +1,17 @@
 import { NavLink, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard, ClipboardList, Leaf, Stethoscope,
-  UserCircle, History, FlaskConical, LogOut, Sparkles
+  UserCircle, History, FlaskConical, LogOut, Sparkles,
+  Filter,
+  Upload
 } from "lucide-react"
 
 const NAV = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/filter", icon: Filter, label: "Filter" },
   { to: "/report", icon: ClipboardList, label: "Report" },
+   { to: "/upload", icon: Upload, label: "Upload" },
+
 
 ]
 

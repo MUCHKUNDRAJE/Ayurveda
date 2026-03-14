@@ -10,6 +10,8 @@ import Doctors from "@/pages/Doctors"
 import Profile from "@/pages/Profile"
 import History from "@/pages/History"
 import Report from "./pages/Report"
+import Filter from "./pages/Fliter"
+import Upload from "./pages/Upload"
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/report" element={<Report />} />
+          <Route path="/filter" element={<Filter />} />
+          <Route path="/upload" element={<Upload />} />
   
         
         </Route>
