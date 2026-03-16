@@ -1,6 +1,7 @@
 import Sidebar from "./Sidebar"
 import Navbar from "./Navbar"
 import { Outlet } from "react-router-dom"
+import AyurvedicChatbot from "@/components/AyurvedicChatbot"
 
 export default function AppLayout() {
   return (
@@ -16,6 +17,7 @@ export default function AppLayout() {
         <main style={{ flex: 1, overflowY: "auto", padding: "28px" }}>
           <Outlet />
         </main>
+        <AyurvedicChatbot />
       </div>
     </div>
   )
