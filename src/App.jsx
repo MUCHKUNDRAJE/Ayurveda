@@ -25,7 +25,6 @@ function App() {
           <Route path="/report" element={<Report />} />
           <Route path="/filter" element={<Filter />} />
           <Route path="/upload" element={<Upload />} />
-  
         
         </Route>
       </Routes>
