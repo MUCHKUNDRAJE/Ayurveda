@@ -28,7 +28,31 @@ function App() {
         
         </Route>
       </Routes>
-    </BrowserRouter>
+
+     <div style={{ 
+        height: "160px", 
+        width: "100%", 
+        backgroundColor: "#ffffff", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        borderTop: "1px solid #f1f5f9",
+        marginTop: "40px"
+      }}>
+        <p style={{ 
+          margin: 0, 
+          color: "#64748b", 
+          fontSize: "14px", 
+          fontFamily: "sans-serif",
+          letterSpacing: "0.02em"
+        }}>
+          Created and designed by 
+          <span style={{ fontWeight: "700", color: "#0f172a", marginLeft: "5px" }}>
+            Codeware (Innovative<span style={{ color: "#10b981" }}>X</span>)
+          </span>
+        </p>
+      </div>
+    </BrowserRouter>  
   )
 }
 
