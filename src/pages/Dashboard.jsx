@@ -76,26 +76,43 @@ export default function Dashboard() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <header style={{ marginBottom: "20px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#1e293b", margin: 0 }}>
+          <h1 style={{ fontSize: "35px", fontWeight: "800", color: "#1e293b", margin: 20 }}>
             Dashboard
           </h1>
         </header>
         
-        {/* Hero Banner */}
         <div style={{
           background: "linear-gradient(135deg,#0d2e0d,#1a3a1a,#0f2f1a)",
-          borderRadius: 24, padding: "36px 40px", marginBottom: 28, position: "relative", overflow: "hidden",
+          borderRadius: 24, padding: "40px", marginBottom: 32, position: "relative", overflow: "hidden",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
         }}>
-          <div style={{ position: "relative", zIndex: 2 }}>
-            <h2 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#f5f5f5", margin: "0 0 8px" }}>
-              Welcome, <span style={{ color: "#4CAF50" }}>Admin</span> 🌿
-            </h2>
-            <p style={{ color: "#9ca3af", fontSize: "0.95rem", margin: "0 0 24px", maxWidth: 500 }}>
-              Hospital Management Dashboard for <strong style={{ color: "#81C784" }}>Datta Meghe Ayurved</strong>.
-            </p>
-            <button onClick={() => navigate("/assessment")} style={{ background: "#4CAF50", color: "white", border: "none", padding: "12px 24px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              Continue Assessment <ArrowRight size={16} />
-            </button>
+          <div style={{ position: "relative", zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+
+              <p style={{ color: "#9ca3af", fontSize: "1rem", margin: "0 0 1px", maxWidth: 500 }}>
+                <span style={{color: '#81C784'}}> ● Unified Hospital Intelligence and Analytical Reporting Hub </span> 
+                </p>
+
+
+                <h2 style={{ fontSize: "2.4rem", fontWeight: 800, color: "#f5f5f5", margin: "0 0 8px" }}>
+                Welcome, <span style={{ color: "#4CAF50" }}>Admin</span> 🌿
+                </h2>
+                <p style={{ color: "#9ca3af", fontSize: "1rem", margin: "0 0 24px", maxWidth: 500 }}>
+                  Sustaining the vital essence of <span style={{color: '#81C784'}}> Datta Meghe Ayurved </span> Hospital through high-precision patient data orchestration and real-time analytical reporting.
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={() => navigate("/assessment")} style={{ background: "#4CAF50", color: "white", border: "none", padding: "12px 24px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                    New Assessment <ArrowRight size={16} />
+                    </button>
+                    
+                </div>
+            </div>
+            {/* Added a subtle info badge */}
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right' }}>
+                <div style={{ color: '#4CAF50', fontSize: '0.8rem', fontWeight: 800 }}>ACCREDITATION STATUS</div>
+                <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 700 }}>NABH Level 2</div>
+                <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Renewal in 45 Days</div>
+            </div>
           </div>
         </div>
 

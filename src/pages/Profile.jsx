@@ -19,8 +19,8 @@ const HEALTH_METRICS = [
 export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
-    name: "Arjun Mehta",
-    email: "arjun.mehta@email.com",
+    name: "Admin",
+    email: "admin@email.com",
     age: "28",
     phone: "+91 98765 43210",
     city: "Mumbai, Maharashtra",

@@ -2,7 +2,7 @@ import { Bell, Search, ChevronDown } from "lucide-react"
 import { useLocation } from "react-router-dom"
 
 const PAGE_TITLES = {
-  "/dashboard": { title: "Dashboard", sub: "Welcome back, Arjun 👋" },
+  "/dashboard": { title: "Dashboard", sub: "Welcome back, Admin 👋" },
   "/assessment": { title: "Health Assessment", sub: "Complete your wellness evaluation" },
   "/dosha": { title: "Dosha Analysis", sub: "Your Ayurvedic constitution" },
   "/remedies": { title: "Herbal Remedies", sub: "Nature's healing wisdom" },
@@ -82,7 +82,7 @@ export default function Navbar() {
             fontSize: "0.85rem", fontWeight: 700, color: "white"
           }}>A</div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "black", lineHeight: 1 }}>Arjun</span>
+            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "black", lineHeight: 1 }}>Admin</span>
             <span style={{ fontSize: "0.65rem", color: "#4CAF50", marginTop: 1 }}>Vata Type</span>
           </div>
           <ChevronDown size={14} style={{ color: "#6b7280" }} />
