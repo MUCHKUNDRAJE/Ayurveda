@@ -699,8 +699,8 @@ export default function Report() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight leading-none">Dashboard</h1>
-            <p className="text-gray-400 text-xs mt-1">Jun 1 – Aug 31, 2024 ∨</p>
+            <h1 className="text-4xl font-extrabold tracking-tight leading-none">Report</h1>
+            <p className="text-gray-400 text-xs mt-1">Jan 1 – Feb 31, 2026 ∨</p>
           </div>
           <div className="flex gap-12">
             {[
