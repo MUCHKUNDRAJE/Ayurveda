@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -8,298 +8,342 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, X } from "lucide-react";
+import { 
+  Search, X, MapPin, User, Activity, 
+  Users, Calendar, Filter, Download, ChevronLeft, ChevronRight, Hash, GraduationCap, ClipboardList, DatabaseZap
+} from "lucide-react";
+import * as XLSX from "xlsx";
 
-// ─── Dummy Data ────────────────────────────────────────────────────────────────
+// ─── Data Source (17 People) ───────────────────────────────────────────────────
 const dummyData = [
-  { id:"HC-001", rollNo:"2023001", student:"Priya Sharma", phone:"9876543210", email:"priya@student.edu", village:"Wanadongri", ward:"Ward 5", patient:"Sunita Devi", age:45, patientPhone:"9845001234", edu:"Upto 10th standard", gender:"Female", occ:"Homemaker", heardAbout:"Yes", howHear:["Social Media"], conditions:["Diabetes","Arthritis/knee pain/Back pain"], date:"2026-03-01", doctor:"Dr. Rane", status:"Completed" },
-  { id:"HC-002", rollNo:"2023045", student:"Rahul Patil", phone:"9123456789", email:"rahul@student.edu", village:"Hingna", ward:"Ward 2", patient:"Ramesh Kumar", age:62, patientPhone:"9812345678", edu:"Graduate", gender:"Male", occ:"Retired", heardAbout:"Yes", howHear:["Health Camp"], conditions:["Hypertension","Heart disease"], date:"2026-03-02", doctor:"Dr. Joshi", status:"Pending" },
-  { id:"HC-003", rollNo:"2023078", student:"Neha Tiwari", phone:"9765432100", email:"neha@student.edu", village:"Butibori", ward:"Ward 9", patient:"Meena Bai", age:33, patientPhone:"9823456789", edu:"HSC", gender:"Female", occ:"Homemaker", heardAbout:"Yes", howHear:["Referred by Doctor"], conditions:["PCOD","Menstrual Disorder"], date:"2026-03-03", doctor:"Dr. Kulkarni", status:"Completed" },
-  { id:"HC-004", rollNo:"2023112", student:"Amit Verma", phone:"9654321098", email:"amit@student.edu", village:"Kamptee", ward:"Ward 3", patient:"Suresh Rao", age:55, patientPhone:"9867890123", edu:"Postgraduate and above", gender:"Male", occ:"Government Job", heardAbout:"Yes", howHear:["Newspaper"], conditions:["Paralysis","Asthama"], date:"2026-03-04", doctor:"Dr. Rane", status:"Follow-up" },
-  { id:"HC-005", rollNo:"2023156", student:"Anjali Desai", phone:"9543219876", email:"anjali@student.edu", village:"Nandanvan", ward:"Ward 7", patient:"Lata Verma", age:28, patientPhone:"9898765432", edu:"Graduate", gender:"Female", occ:"Private Job", heardAbout:"No", howHear:["Friends/Family"], conditions:["Obesity","Thyroid"], date:"2026-03-05", doctor:"Dr. Mehta", status:"Pending" },
-  { id:"HC-006", rollNo:"2023198", student:"Vikram Singh", phone:"9432198765", email:"vikram@student.edu", village:"Somalwada", ward:"Ward 1", patient:"Arjun Patil", age:70, patientPhone:"9877654321", edu:"Illiterate", gender:"Male", occ:"Unemployed", heardAbout:"Yes", howHear:["Flex boards/Posters"], conditions:["Piles/Haemorrhoids","Kidney Stone"], date:"2026-03-06", doctor:"Dr. Joshi", status:"Completed" },
-  { id:"HC-007", rollNo:"2023234", student:"Pooja Nair", phone:"9321987654", email:"pooja@student.edu", village:"Besa", ward:"Ward 12", patient:"Kavita Shah", age:38, patientPhone:"9856341200", edu:"HSC", gender:"Female", occ:"Business/self Employed", heardAbout:"Yes", howHear:["Social Media"], conditions:["Diminished Vision","Migraine"], date:"2026-03-07", doctor:"Dr. Kulkarni", status:"Follow-up" },
-  { id:"HC-008", rollNo:"2023267", student:"Suresh Yadav", phone:"9210987643", email:"suresh@student.edu", village:"Wathoda", ward:"Ward 6", patient:"Dinesh More", age:48, patientPhone:"9834560987", edu:"Upto 10th standard", gender:"Male", occ:"Student", heardAbout:"Yes", howHear:["Health Camp"], conditions:["Acidity/Hyper Acidity","Skin Disease"], date:"2026-03-08", doctor:"Dr. Rane", status:"Completed" },
-  { id:"HC-009", rollNo:"2023301", student:"Rekha Joshi", phone:"9109876532", email:"rekha@student.edu", village:"Mankapur", ward:"Ward 4", patient:"Savita Boro", age:22, patientPhone:"9812009876", edu:"Graduate", gender:"Female", occ:"Homemaker", heardAbout:"No", howHear:["Referred by Doctor"], conditions:["Infertility","White Discharge"], date:"2026-03-09", doctor:"Dr. Mehta", status:"Pending" },
-  { id:"HC-010", rollNo:"2023345", student:"Kiran Bhosale", phone:"9000876543", email:"kiran@student.edu", village:"Pratap Nagar", ward:"Ward 8", patient:"Mohan Das", age:10, patientPhone:"9845670123", edu:"Illiterate", gender:"Male", occ:"Student", heardAbout:"Yes", howHear:["Friends/Family"], conditions:["Malnourish Children","Cerebral Palsy"], date:"2026-03-10", doctor:"Dr. Joshi", status:"Completed" },
-  { id:"HC-011", rollNo:"2023389", student:"Divya Kulkarni", phone:"8888776655", email:"divya@student.edu", village:"Hudkeshwar", ward:"Ward 11", patient:"Anita Raut", age:50, patientPhone:"9871234560", edu:"Postgraduate and above", gender:"Female", occ:"Government Job", heardAbout:"Yes", howHear:["Newspaper"], conditions:["Arthritis/knee pain/Back pain","Breathlesness, Weakness"], date:"2026-03-11", doctor:"Dr. Rane", status:"Follow-up" },
-  { id:"HC-012", rollNo:"2023412", student:"Manish Tomar", phone:"8777665544", email:"manish@student.edu", village:"Koradi", ward:"Ward 10", patient:"Raju Mishra", age:65, patientPhone:"9854321098", edu:"Upto 10th standard", gender:"Male", occ:"Retired", heardAbout:"Yes", howHear:["Social Media"], conditions:["Hernia","Urine Disorder"], date:"2026-03-12", doctor:"Dr. Kulkarni", status:"Completed" },
+  { id:"HC-017", rollNo:"2023501", student:"Snehal Raut", village:"Zari", patient:"Keshavrao Jha", age:68, gender:"Male", conditions:["Cataract","Hypertension"], date:"2026-03-17", doctor:"Dr. Joshi", status:"Pending" },
+  { id:"HC-016", rollNo:"2023488", student:"Yash Deshmukh", village:"Parsodi", patient:"Shaila Taneja", age:42, gender:"Female", conditions:["Back pain","Anemia"], date:"2026-03-16", doctor:"Dr. Mehta", status:"Completed" },
+  { id:"HC-015", rollNo:"2023450", student:"Rohan Gokhale", village:"Bori", patient:"Vikas Meshram", age:55, gender:"Male", conditions:["Diabetes","Foot Ulcer"], date:"2026-03-15", doctor:"Dr. Rane", status:"Follow-up" },
+  { id:"HC-014", rollNo:"2023432", student:"Tanvi Kadam", village:"Kalmeshwar", patient:"Laxmi Bai", age:30, gender:"Female", conditions:["Thyroid","PCOD"], date:"2026-03-14", doctor:"Dr. Kulkarni", status:"Completed" },
+  { id:"HC-013", rollNo:"2023420", student:"Sahil Wankhede", village:"Gumgaon", patient:"Baba Sheikh", age:60, gender:"Male", conditions:["Asthma","Weakness"], date:"2026-03-13", doctor:"Dr. Joshi", status:"Pending" },
+  { id:"HC-012", rollNo:"2023412", student:"Manish Tomar", village:"Koradi", patient:"Raju Mishra", age:65, gender:"Male", conditions:["Hernia","Urine Disorder"], date:"2026-03-12", doctor:"Dr. Kulkarni", status:"Completed" },
+  { id:"HC-011", rollNo:"2023389", student:"Divya Kulkarni", village:"Hudkeshwar", patient:"Anita Raut", age:50, gender:"Female", conditions:["Arthritis","Weakness"], date:"2026-03-11", doctor:"Dr. Rane", status:"Follow-up" },
+  { id:"HC-010", rollNo:"2023345", student:"Kiran Bhosale", village:"Pratap Nagar", patient:"Mohan Das", age:10, gender:"Male", conditions:["Malnourish","Cerebral Palsy"], date:"2026-03-10", doctor:"Dr. Joshi", status:"Completed" },
+  { id:"HC-009", rollNo:"2023301", student:"Rekha Joshi", village:"Mankapur", patient:"Savita Boro", age:22, gender:"Female", conditions:["Infertility","White Discharge"], date:"2026-03-09", doctor:"Dr. Mehta", status:"Pending" },
+  { id:"HC-008", rollNo:"2023267", student:"Suresh Yadav", village:"Wathoda", patient:"Dinesh More", age:48, gender:"Male", conditions:["Acidity","Skin Disease"], date:"2026-03-08", doctor:"Dr. Rane", status:"Completed" },
+  { id:"HC-007", rollNo:"2023234", student:"Pooja Nair", village:"Besa", patient:"Kavita Shah", age:38, gender:"Female", conditions:["Vision","Migraine"], date:"2026-03-07", doctor:"Dr. Kulkarni", status:"Follow-up" },
+  { id:"HC-006", rollNo:"2023198", student:"Vikram Singh", village:"Somalwada", patient:"Arjun Patil", age:70, gender:"Male", conditions:["Piles","Kidney Stone"], date:"2026-03-06", doctor:"Dr. Joshi", status:"Completed" },
+  { id:"HC-005", rollNo:"2023156", student:"Anjali Desai", village:"Nandanvan", patient:"Lata Verma", age:28, gender:"Female", conditions:["Obesity","Thyroid"], date:"2026-03-05", doctor:"Dr. Mehta", status:"Pending" },
+  { id:"HC-004", rollNo:"2023112", student:"Amit Verma", village:"Kamptee", patient:"Suresh Rao", age:55, gender:"Male", conditions:["Paralysis","Asthama"], date:"2026-03-04", doctor:"Dr. Rane", status:"Follow-up" },
+  { id:"HC-003", rollNo:"2023078", student:"Neha Tiwari", village:"Butibori", patient:"Meena Bai", age:33, gender:"Female", conditions:["PCOD","Disorder"], date:"2026-03-03", doctor:"Dr. Kulkarni", status:"Completed" },
+  { id:"HC-002", rollNo:"2023045", student:"Rahul Patil", village:"Hingna", patient:"Ramesh Kumar", age:62, gender:"Male", conditions:["Hypertension","Heart disease"], date:"2026-03-02", doctor:"Dr. Joshi", status:"Pending" },
+  { id:"HC-001", rollNo:"2023001", student:"Priya Sharma", village:"Wanadongri", patient:"Sunita Devi", age:45, gender:"Female", conditions:["Diabetes","Arthritis"], date:"2026-03-01", doctor:"Dr. Rane", status:"Completed" },
 ];
 
 const statusClass = {
-  Completed:   "bg-green-50 text-green-700 border border-green-200 hover:bg-green-50",
-  Pending:     "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50",
-  "Follow-up": "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-50",
+  Completed: "bg-green-100 text-green-800 border-green-200",
+  Pending: "bg-amber-100 text-amber-800 border-amber-200",
+  "Follow-up": "bg-blue-100 text-blue-800 border-blue-200",
 };
 
-// ─── Table View ────────────────────────────────────────────────────────────────
-function TableView() {
-  const [search, setSearch]             = useState("");
+export default function PatientPortal() {
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [dateFrom, setDateFrom]         = useState("");
-  const [dateTo, setDateTo]             = useState("");
+  const [villageFilter, setVillageFilter] = useState("All");
   const [doctorFilter, setDoctorFilter] = useState("All");
-  const [sortCol, setSortCol]           = useState("date");
-  const [sortDir, setSortDir]           = useState("desc");
-  const [selected, setSelected]         = useState([]);
-  const [page, setPage]                 = useState(1);
-  const perPage = 8;
+  const [genderFilter, setGenderFilter] = useState("All");
+  const [conditionFilter, setConditionFilter] = useState("All");
+  const [ageMin, setAgeMin] = useState("");
+  const [ageMax, setAgeMax] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const doctors = ["All", ...Array.from(new Set(dummyData.map((d) => d.doctor)))];
+  const options = useMemo(() => ({
+    villages: ["All", ...new Set(dummyData.map(d => d.village))],
+    doctors: ["All", ...new Set(dummyData.map(d => d.doctor))],
+    conditions: ["All", ...new Set(dummyData.flatMap(d => d.conditions || []))],
+  }), []);
 
-  const filtered = useMemo(() => {
-    let rows = dummyData.filter((r) => {
+  // ─── Search & Filter Logic ───
+  const filteredData = useMemo(() => {
+    return dummyData.filter(item => {
       const q = search.toLowerCase();
-      if (q && ![r.id, r.student, r.patient, r.rollNo].some((v) => v.toLowerCase().includes(q))) return false;
-      if (statusFilter !== "All" && r.status !== statusFilter) return false;
-      if (doctorFilter !== "All" && r.doctor !== doctorFilter) return false;
-      if (dateFrom && r.date < dateFrom) return false;
-      if (dateTo && r.date > dateTo) return false;
-      return true;
+      // Improved multi-field search logic
+      const matchesSearch = !search || 
+        item.id.toLowerCase().includes(q) || 
+        item.patient.toLowerCase().includes(q) || 
+        item.student.toLowerCase().includes(q) ||
+        item.rollNo.toLowerCase().includes(q);
+
+      const matchesStatus = statusFilter === "All" || item.status === statusFilter;
+      const matchesVillage = villageFilter === "All" || item.village === villageFilter;
+      const matchesDoctor = doctorFilter === "All" || item.doctor === doctorFilter;
+      const matchesGender = genderFilter === "All" || item.gender === genderFilter;
+      const matchesCondition = conditionFilter === "All" || item.conditions.includes(conditionFilter);
+      const matchesDate = !dateFilter || item.date === dateFilter;
+      const matchesAge = (!ageMin || item.age >= parseInt(ageMin)) && (!ageMax || item.age <= parseInt(ageMax));
+
+      return matchesSearch && matchesStatus && matchesVillage && matchesDoctor && 
+             matchesGender && matchesCondition && matchesAge && matchesDate;
     });
-    rows = [...rows].sort((a, b) => {
-      let av = a[sortCol], bv = b[sortCol];
-      if (typeof av === "string") { av = av.toLowerCase(); bv = bv.toLowerCase(); }
-      return sortDir === "asc" ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
-    });
-    return rows;
-  }, [search, statusFilter, doctorFilter, dateFrom, dateTo, sortCol, sortDir]);
+  }, [search, statusFilter, villageFilter, doctorFilter, genderFilter, conditionFilter, ageMin, ageMax, dateFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const pageData   = filtered.slice((page - 1) * perPage, page * perPage);
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
 
-  const sort = (col) => {
-    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortCol(col); setSortDir("asc"); }
-    setPage(1);
-  };
-  const arrow = (col) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
-
-  const allOnPageChecked = pageData.length > 0 && pageData.every((r) => selected.includes(r.id));
-  const toggleAll = (checked) => setSelected(checked ? pageData.map((r) => r.id) : []);
-  const toggleOne = (id, checked) =>
-    setSelected((s) => checked ? [...s, id] : s.filter((x) => x !== id));
-
-  const clearFilters = () => {
-    setSearch(""); setStatusFilter("All"); setDateFrom(""); setDateTo(""); setDoctorFilter("All"); setPage(1);
+  const resetFilters = () => {
+    setSearch(""); setStatusFilter("All"); setVillageFilter("All"); setDoctorFilter("All");
+    setGenderFilter("All"); setConditionFilter("All"); setAgeMin(""); setAgeMax(""); 
+    setDateFilter(""); setCurrentPage(1);
   };
 
-  const SortTh = ({ col, children }) => (
-    <TableHead
-      onClick={() => sort(col)}
-      className="cursor-pointer text-gray-900 select-none whitespace-nowrap hover:text-gray-900 transition-colors bg-white"
-    >
-      {children}{arrow(col)}
-    </TableHead>
-  );
+  const handleExportExcel = () => {
+  // 1. Prepare and format the data for Excel
+  const excelData = filteredData.map((item) => ({
+    "HC ID": item.id,
+    "Roll No": item.rollNo,
+    "Student Name": item.student,
+    "Patient Name": item.patient,
+    "Village": item.village,
+    "Gender": item.gender,
+    "Age": item.age,
+    "Conditions": item.conditions.join(", "), // Flatten the array into a string
+    "Doctor": item.doctor,
+    "Visit Date": item.date,
+    "Status": item.status,
+  }));
+
+  // 2. Create the worksheet and workbook
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Patients");
+
+  // 3. Trigger the download
+  XLSX.writeFile(workbook, `HealthCamp_Records_${new Date().toISOString().split('T')[0]}.xlsx`);
+};
 
   return (
-    <Card className="bg-white border border-gray-200 shadow-none rounded-xl">
-      <CardHeader className="pb-4 bg-white rounded-t-xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg text-gray-900">Health Camp Records</CardTitle>
-            <p className="text-sm text-gray-400 mt-0.5">{filtered.length} entries found</p>
-          </div>
-          {selected.length > 0 && (
-            <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100">
-              {selected.length} selected
-            </Badge>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search ID, student, patient…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-gray-300"
-            />
-          </div>
-
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="w-auto bg-white border-gray-200 text-gray-700 focus-visible:ring-gray-300"
-          />
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="w-auto bg-white border-gray-200 text-gray-700 focus-visible:ring-gray-300"
-          />
-
-          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[130px] bg-white border-gray-200 text-gray-700 focus:ring-gray-300">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
-              {["All", "Completed", "Pending", "Follow-up"].map((s) => (
-                <SelectItem key={s} value={s} className="text-gray-700 focus:bg-gray-50">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={doctorFilter} onValueChange={(v) => { setDoctorFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[150px] bg-white border-gray-200 text-gray-700 focus:ring-gray-300">
-              <SelectValue placeholder="Doctor" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
-              {doctors.map((d) => (
-                <SelectItem key={d} value={d} className="text-gray-700 focus:bg-gray-50">{d}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            onClick={clearFilters}
-            className="bg-white border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
-          >
-            <X className="w-4 h-4 mr-1" /> Clear
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="p-0 bg-white rounded-b-xl">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader >
-              <TableRow className="bg-gray-50 text-black border-y border-gray-100">
-                <TableHead className="w-10 bg-gray-50">
-                  <Checkbox
-                    checked={allOnPageChecked}
-                    onCheckedChange={toggleAll}
-                    className="border-gray-300"
-                  />
-                </TableHead>
-                <SortTh col="id">HC ID</SortTh>
-                <SortTh col="rollNo">Roll No.</SortTh>
-                <SortTh col="student">Student</SortTh>
-                <SortTh col="patient">Patient</SortTh>
-                <SortTh col="village">Village</SortTh>
-                <SortTh col="gender">Gender</SortTh>
-                <SortTh col="age">Age</SortTh>
-                <TableHead className="bg-white">Conditions</TableHead>
-                <SortTh col="doctor">Doctor</SortTh>
-                <SortTh col="date">Date</SortTh>
-                <SortTh col="status">Status</SortTh>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={12} className="text-center py-10 text-gray-400 bg-white">
-                    No records found
-                  </TableCell>
-                </TableRow>
-              ) : pageData.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className="bg-white hover:bg-gray-50/70 border-b border-gray-100 transition-colors"
-                >
-                  <TableCell className="bg-transparent">
-                    <Checkbox
-                      checked={selected.includes(r.id)}
-                      onCheckedChange={(checked) => toggleOne(r.id, checked)}
-                      className="border-gray-300"
-                    />
-                  </TableCell>
-                  <TableCell className="font-semibold text-blue-600">{r.id}</TableCell>
-                  <TableCell className="font-mono text-xs text-gray-400">{r.rollNo}</TableCell>
-                  <TableCell className="text-gray-800">{r.student}</TableCell>
-                  <TableCell className="text-gray-800">{r.patient}</TableCell>
-                  <TableCell className="text-gray-400 text-xs">{r.village}</TableCell>
-                  <TableCell className="text-xs text-gray-600">{r.gender}</TableCell>
-                  <TableCell className="text-xs text-gray-600">{r.age}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1 flex-wrap max-w-[200px]">
-                      {r.conditions.slice(0, 2).map((c) => (
-                        <Badge
-                          key={c}
-                          className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100"
-                        >
-                          {c}
-                        </Badge>
-                      ))}
-                      {r.conditions.length > 2 && (
-                        <Badge className="text-[10px] px-1.5 py-0 bg-white text-gray-400 border border-gray-200 hover:bg-white">
-                          +{r.conditions.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs text-gray-600">{r.doctor}</TableCell>
-                  <TableCell className="text-xs text-gray-400">{r.date}</TableCell>
-                  <TableCell>
-                    <Badge className={`text-xs font-medium ${statusClass[r.status]}`}>
-                      {r.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white rounded-b-xl">
-          <span className="text-sm text-gray-400">
-            Page {page} of {totalPages}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="bg-white border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30"
-            >
-              ←
-            </Button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-              <Button
-                key={p}
-                size="sm"
-                onClick={() => setPage(p)}
-                className={
-                  page === p
-                    ? "bg-gray-900 text-white hover:bg-gray-800 border-gray-900"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }
+    <div className="p-4 bg-gray-50 min-h-screen">
+      <Card className="max-w-[1550px] mx-auto shadow-sm border-gray-200 bg-white">
+        <CardHeader className="space-y-6 border-b border-gray-100">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Filter className="w-6 h-6 text-blue-600" /> Patient Analytics Portal
+              </CardTitle>
+              <p className="text-sm text-gray-400 mt-1">{filteredData.length} active records based on filters</p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleExportExcel} 
+                variant="outline" 
+                className="h-9 px-4 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-200 active:scale-95 flex items-center gap-2 font-medium shadow-sm"
               >
-                {p}
+                <Download className="w-4 h-4" /> 
+                Export Excel
               </Button>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="bg-white border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30"
-            >
-              →
-            </Button>
+              <Button onClick={resetFilters} variant="destructive" className="h-9 bg-black hover:bg-gray-800">
+                <X className="w-4 h-4 mr-2" /> Reset All
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
-// ─── Root ──────────────────────────────────────────────────────────────────────
-export default function Filter() {
-  return (
-    <div className="min-h-screen bg-white p-4 sm:p-6">
-      <div className="max-w-6xl mx-auto">
-        <TableView />
-      </div>
+          {/* ─── FILTERS ─── */}
+          <div className="grid grid-cols-1 md:grid-cols-4  gap-x-12 gap-y-6">
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <Search className="w-3 h-3"/> Search Patient (HC ID / Name / Roll No)
+              </label>
+              <Input 
+                placeholder="Search..." 
+                value={search} 
+                onChange={(e) => {setSearch(e.target.value); setCurrentPage(1);}} 
+                className="text-gray-900 border-gray-200 h-10 bg-white placeholder:text-gray-400" 
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <MapPin className="w-3 h-3"/> Village
+              </label>
+              <Select value={villageFilter} onValueChange={(v) => {setVillageFilter(v); setCurrentPage(1);}}>
+                <SelectTrigger className="text-gray-900 border-gray-200 h-10 bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white">{options.villages.map(v => <SelectItem key={v} value={v} className="text-gray-900">{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <Users className="w-3 h-3"/> Gender
+              </label>
+              <Select value={genderFilter} onValueChange={(v) => {setGenderFilter(v); setCurrentPage(1);}}>
+                <SelectTrigger className="text-gray-900 border-gray-200 h-10 bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white">{["All", "Male", "Female"].map(g => <SelectItem key={g} value={g} className="text-gray-900">{g}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <Calendar className="w-3 h-3"/> Age Range
+              </label>
+              <div className="flex gap-2 items-center">
+                <Input placeholder="Min" value={ageMin} onChange={e => {setAgeMin(e.target.value); setCurrentPage(1);}} className="text-gray-900 border-gray-200 h-10 bg-white" />
+                <span className="text-gray-300">-</span>
+                <Input placeholder="Max" value={ageMax} onChange={e => {setAgeMax(e.target.value); setCurrentPage(1);}} className="text-gray-900 border-gray-200 h-10 bg-white" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-blue-600 uppercase flex items-center gap-2">
+                <Activity className="w-3 h-3"/> Condition
+              </label>
+              <Select value={conditionFilter} onValueChange={(v) => {setConditionFilter(v); setCurrentPage(1);}}>
+                <SelectTrigger className="text-blue-900 border-blue-100 h-10 bg-blue-50/50 font-medium"><SelectValue placeholder="All" /></SelectTrigger>
+                <SelectContent className="bg-white">{options.conditions.map(c => <SelectItem key={c} value={c} className="text-gray-900">{c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <User className="w-3 h-3"/> Consulting Doctor
+              </label>
+              <Select value={doctorFilter} onValueChange={(v) => {setDoctorFilter(v); setCurrentPage(1);}}>
+                <SelectTrigger className="text-gray-900 border-gray-200 h-10 bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white">{options.doctors.map(d => <SelectItem key={d} value={d} className="text-gray-900">{d}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <Calendar className="w-3 h-3"/> Visit Date
+              </label>
+              <Input type="date" value={dateFilter} onChange={e => {setDateFilter(e.target.value); setCurrentPage(1);}} className="text-gray-900 border-gray-200 h-10 bg-white" />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                <ClipboardList className="w-3 h-3"/> Status
+              </label>
+              <Select value={statusFilter} onValueChange={(v) => {setStatusFilter(v); setCurrentPage(1);}}>
+                <SelectTrigger className="text-gray-900 border-gray-200 h-10 bg-white"><SelectValue placeholder="All" /></SelectTrigger>
+                <SelectContent className="bg-white">{["All", "Completed", "Pending", "Follow-up"].map(s => <SelectItem key={s} value={s} className="text-gray-900">{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          <div className="overflow-x-auto min-h-[400px]">
+            <Table>
+              <TableHeader className="bg-gray-100">
+                <TableRow>
+                  <TableHead className="font-bold text-gray-700 h-10"><Hash className="w-3 h-3 inline mr-1"/> HC ID</TableHead>
+                  <TableHead className="font-bold text-gray-700">Roll No.</TableHead>
+                  <TableHead className="font-bold text-gray-700">Student</TableHead>
+                  <TableHead className="font-bold text-gray-700">Patient Name</TableHead>
+                  <TableHead className="font-bold text-gray-700">Village</TableHead>
+                  <TableHead className="font-bold text-gray-700">Gender</TableHead>
+                  <TableHead className="font-bold text-gray-700">Age</TableHead>
+                  <TableHead className="font-bold text-gray-700">Conditions</TableHead>
+                  <TableHead className="font-bold text-gray-700">Doctor</TableHead>
+                  <TableHead className="font-bold text-gray-700">Date</TableHead>
+                  <TableHead className="font-bold text-gray-700 text-center">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((row) => (
+                    <TableRow key={row.id} className="hover:bg-gray-50 border-b border-gray-100 h-12">
+                      <TableCell className="font-bold text-blue-600">{row.id}</TableCell>
+                      <TableCell className="text-gray-400 text-[11px] font-mono">{row.rollNo}</TableCell>
+                      <TableCell className="text-gray-700 text-sm whitespace-nowrap">{row.student}</TableCell>
+                      <TableCell className="font-semibold text-gray-900 whitespace-nowrap">{row.patient}</TableCell>
+                      <TableCell className="text-gray-600 text-sm">{row.village}</TableCell>
+                      <TableCell className="text-gray-600 text-sm">{row.gender}</TableCell>
+                      <TableCell className="text-gray-600 text-sm">{row.age}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 min-w-[180px]">
+                          {row.conditions.map(c => (
+                            <Badge key={c} variant="secondary" className="text-[10px] bg-gray-100 text-gray-700 border-none px-1.5 py-0 font-normal whitespace-nowrap">
+                              {c}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 text-sm whitespace-nowrap">{row.doctor}</TableCell>
+                      <TableCell className="text-gray-400 text-xs">{row.date}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={`${statusClass[row.status]} px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-none`}>
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  /* ─── IMPROVED "NO DATA FOUND" STATE ─── */
+                  <TableRow>
+                    <TableCell colSpan={11} className="h-[400px] text-center">
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="bg-gray-50 p-6 rounded-full">
+                          <DatabaseZap className="w-12 h-12 text-gray-300" />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-lg font-semibold text-gray-900">No matching records found</h3>
+                          <p className="text-sm text-gray-500 max-w-[300px] mx-auto">
+                            We couldn't find any patients matching your current filters. Try adjusting your search or clearing all filters.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={resetFilters} 
+                          variant="outline" 
+                          className="mt-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+                        >
+                          Clear All Filters
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* ─── PAGINATION ─── */}
+          <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t">
+            <p className="text-xs text-gray-400 font-medium">
+              Page {currentPage} of {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)} 
+                className="h-8 bg-white border-gray-200 text-gray-600 shadow-sm"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1"/> Prev
+              </Button>
+              <div className="flex gap-1 mx-2">
+                {Array.from({length: totalPages}).map((_, i) => (
+                  <Button 
+                    key={i} 
+                    onClick={() => setCurrentPage(i+1)} 
+                    className={`h-8 w-8 p-0 text-xs font-bold transition-all ${currentPage === i+1 ? "bg-black text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    {i+1}
+                  </Button>
+                ))}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === totalPages || filteredData.length === 0} 
+                onClick={() => setCurrentPage(p => p + 1)} 
+                className="h-8 bg-white border-gray-200 text-gray-600 shadow-sm"
+              >
+                Next <ChevronRight className="w-4 h-4 ml-1"/>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
