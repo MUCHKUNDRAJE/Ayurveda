@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from "react";
+import axios from "axios";
+import Footer from "@/components/shared/Footer";
 
 const ACCEPTED = [".xlsx", ".xls", ".csv"];
 const ACCEPTED_MIME = [
@@ -33,7 +35,7 @@ function FileRow({ file, onRemove }) {
 
   return (
     <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3">
-      <div className="w-9 h-9 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center shrink-0">
         <span className="text-green-700 text-xs font-bold">{ext}</span>
       </div>
       <div className="flex-1 min-w-0">
@@ -78,7 +80,9 @@ export default function Upload() {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const [message, setMessage] = useState(null);
   const inputRef = useRef(null);
+  const Base_URL = import.meta.env.VITE_BACKEND_API_URL;
 
   const validate = (f) =>
     ACCEPTED.some((ext) => f.name.toLowerCase().endsWith(ext)) ||
@@ -117,15 +121,48 @@ export default function Upload() {
   const handleUpload = async () => {
     if (!files.length) return;
     setUploading(true);
+    setError("");
 
-    // 👇 Replace with your real API call:
-    // const formData = new FormData();
-    // files.forEach((f) => formData.append("file", f));
-    // await fetch("https://your-api.com/upload", { method: "POST", body: formData });
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("file", file); // Ensure the key is correct according to the backend
+    });
 
-    await new Promise((r) => setTimeout(r, 1800));
-    setUploading(false);
-    setUploaded(true);
+    
+
+    try {
+      const response = await axios.post(`${Base_URL}/api/csv/upload`, formData, {
+       
+      });
+
+      if (response.status === 200) {
+        setUploading(false);
+        setUploaded(true);
+        setMessage(response.data);
+      }
+    } catch (err) {
+      setUploading(false);
+      console.error("Upload error:", err);
+
+      if (err.response) {
+        const { status, data } = err.response;
+        const msg = data?.message || "Failed to upload file(s).";
+
+        if (status === 400) {
+          setError(`Bad Request (400): ${msg}`);
+          setMessage(response.data);
+          
+        } else if (status === 500) {
+          setError("Server Error (500): There was a problem on the server side.");
+          
+        } else {
+          setError(`Error (${status}): ${msg}`);
+             
+        }
+      } else {
+        setError("Network error. Please check your connection to the server.");
+      }
+    }
   };
 
   const handleReset = () => {
@@ -136,6 +173,7 @@ export default function Upload() {
   };
 
   return (
+    <>
     <div className="  bg-gray-100 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md mb-50">
 
@@ -171,7 +209,7 @@ export default function Upload() {
 
           {uploaded ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                   <path
                     d="M6 14l6 6 10-10"
@@ -204,6 +242,10 @@ export default function Upload() {
         {/* Error message */}
         {error && (
           <p className="mt-3 text-xs text-red-500 text-center">{error}</p>
+        )}
+
+            {message && (
+          <p className="mt-3 text-xs text-green-500 text-center">{message}</p>
         )}
 
         {/* File list */}
@@ -250,5 +292,9 @@ export default function Upload() {
 
       </div>
     </div>
+
+    
+    
+    </>
   );
 }

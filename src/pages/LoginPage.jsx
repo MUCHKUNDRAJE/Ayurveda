@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
 const LEAVES_BG =
     "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1974&auto=format&fit=crop"
@@ -78,11 +79,45 @@ export default function LoginPage() {
         e.preventDefault()
         if (!validate()) return
         setLoading(true)
-        // Simulate API call
-        await new Promise((r) => setTimeout(r, 1800))
-        setLoading(false)
-        showToast("Logged in successfully!", "success")
-        console.log("Login:", { ...form, rememberMe })
+
+        try {
+            const response = await axios.post("http://localhost:8080/api/auth/login", {
+                email: form.email,
+                password: form.password,
+                role: role
+            })
+
+            setLoading(false)
+
+            if (response.status === 200) {
+                const { token, user } = response.data
+                localStorage.setItem("token", token)
+                localStorage.setItem("user", JSON.stringify(user))
+
+                showToast("Logged in successfully!", "success")
+                
+                // Redirect based on role if needed, or just to dashboard
+                setTimeout(() => navigate("/"), 1000)
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Login Error:", err)
+
+            if (err.response) {
+                const status = err.response.status
+                const message = err.response.data?.message || "Login failed"
+
+                if (status === 400 || status === 401) {
+                    showToast(message, "error")
+                } else if (status === 500) {
+                    showToast("Server error. Please try again later.", "error")
+                } else {
+                    showToast(`Error ${status}: ${message}`, "error")
+                }
+            } else {
+                showToast("Network error. Please check your connection.", "error")
+            }
+        }
     }
 
     function change(field) {

@@ -43,16 +43,7 @@ export default function Navbar() {
       {/* Right: search + notif + avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {/* Search */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 10, padding: "7px 14px",
-          color: "#6b7280", fontSize: "0.8rem"
-        }}>
-          <Search size={14} />
-          <span>Search…</span>
-        </div>
+    
 
         {/* Notification */}
         <button style={{
@@ -62,14 +53,7 @@ export default function Navbar() {
           borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", position: "relative", color: "#9ca3af"
         }}>
-          <Bell size={16} />
-          <span style={{
-            position: "absolute", top: 7, right: 7,
-            width: 7, height: 7,
-            background: "#4CAF50",
-            borderRadius: "50%",
-            border: "1.5px solid #0f0f0f"
-          }} />
+        
         </button>
 
         {/* Avatar */}
@@ -83,9 +67,9 @@ export default function Navbar() {
           }}>A</div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "black", lineHeight: 1 }}>Admin</span>
-            <span style={{ fontSize: "0.65rem", color: "#4CAF50", marginTop: 1 }}>Vata Type</span>
+         
           </div>
-          <ChevronDown size={14} style={{ color: "#6b7280" }} />
+
         </div>
       </div>
     </header>

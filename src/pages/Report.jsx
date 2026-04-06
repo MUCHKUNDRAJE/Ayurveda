@@ -1,6 +1,9 @@
-import MedicineTable from "@/components/shared/TableMed";
-import { Baby, Building, Eye, Flower, Microscope, Pill, PillBottleIcon, TrendingUp, TrendingDown, CalendarDays } from "lucide-react";
+import { Baby, Building, Eye, Flower, Microscope, Pill, PillBottleIcon, TrendingUp, TrendingDown, CalendarDays, Loader2, Download } from "lucide-react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { useEffect, useRef, useState, useMemo } from "react";
+import axios from "axios";
+import Footer from "@/components/shared/Footer";
 
 // ── Load Highcharts from CDN ──────────────────────────────────────────────────
 function useHighcharts(onReady) {
@@ -13,173 +16,131 @@ function useHighcharts(onReady) {
   }, []);
 }
 
-// ── YEAR-WISE DATA SHEET ──────────────────────────────────────────────────────
-// Each year key contains all statistics for that year
-const YEAR_DATA = {
-  2022: {
-    totalPatients: 6840,
-    totalMale: 3980,
-    totalFemale: 2860,
-    opdMonthly:   [88, 102, 118, 130, 145, 132, 140, 158, 148, 165, 178, 195],
-    ipdMonthly:   [30, 38,  44,  52,  60,  48,  55,  62,  58, 68,  74,  88],
-    emgMonthly:   [14, 12,  18,  16,  22,  20,  24,  21,  26, 22,  28,  30],
-    depts: [
-      { name: "Medicine / Panchakarma", y: 35, color: "#e84c3d" },
-      { name: "Surgery",                y: 24, color: "#f5a623" },
-      { name: "Gynecology",             y: 18, color: "#6abf6a" },
-      { name: "Pediatrics",             y: 11, color: "#38b2ac" },
-      { name: "Ophthalmology & ENT",    y:  8, color: "#805ad5" },
-      { name: "Other",                  y:  4, color: "#ed64a6" },
-    ],
-    genderByDept: [
-      { category: "Medicine / Panchakarma", male: 58, female: 42 },
-      { category: "Surgery",                male: 71, female: 29 },
-      { category: "Gynecology",             male: 18, female: 82 },
-      { category: "Pediatrics",             male: 50, female: 50 },
-      { category: "Ophthalmology & ENT",    male: 60, female: 40 },
-      { category: "Other",                  male: 52, female: 48 },
-    ],
-    conditions: {
-      medicine:   [{ name: "Diabetes", value: 112 }, { name: "Hypertension", value: 98 }, { name: "Asthma", value: 70 }, { name: "Heart Disease", value: 55 }, { name: "Paralysis", value: 30 }, { name: "Breathlessness", value: 60 }, { name: "Skin Disease", value: 78 }, { name: "Obesity", value: 65 }, { name: "Acidity", value: 88 }, { name: "Arthritis", value: 102 }, { name: "Thyroid", value: 48 }],
-      surgery:    [{ name: "Urine Disorder", value: 38 }, { name: "Hernia", value: 50 }, { name: "Hydrocele", value: 28 }, { name: "Cyst", value: 22 }, { name: "Kidney Stone", value: 74 }, { name: "Piles", value: 60 }, { name: "Fistula", value: 35 }, { name: "Corn", value: 14 }, { name: "Diabetic Wounds", value: 44 }],
-      gynecology: [{ name: "Menstrual Disorder", value: 85 }, { name: "Abnormal Vaginal Bleeding", value: 54 }, { name: "Uterine Prolapse", value: 32 }, { name: "Infertility", value: 72 }, { name: "White Discharge", value: 62 }, { name: "Cyst in Breast", value: 42 }, { name: "PCOD", value: 96 }, { name: "ANC", value: 78 }],
-      pediatrics: [{ name: "Allergic Rhinitis", value: 66 }, { name: "Malnourish Children", value: 44 }, { name: "Difficulty in Speech", value: 25 }, { name: "Convulsions", value: 20 }, { name: "Not Gaining Weight", value: 55 }, { name: "Cerebral Palsy", value: 14 }, { name: "Obesity in Children", value: 35 }, { name: "Mentally Deficient", value: 18 }, { name: "Other", value: 28 }],
-      ent:        [{ name: "Diminished Vision", value: 70 }, { name: "Discharge from Eye", value: 42 }, { name: "Sqint", value: 30 }, { name: "Pterygium", value: 22 }, { name: "Ear Discharge", value: 50 }, { name: "DNS", value: 35 }, { name: "Migraine", value: 60 }],
-    },
-  },
-  2023: {
-    totalPatients: 7850,
-    totalMale: 4520,
-    totalFemale: 3330,
-    opdMonthly:   [105, 125, 143, 162, 178, 155, 168, 188, 172, 198, 215, 238],
-    ipdMonthly:   [38,  47,  54,  63,  72,  59,  65,  76,  70,  82,  90, 104],
-    emgMonthly:   [17,  15,  22,  19,  27,  24,  29,  25,  31,  27,  34,  38],
-    depts: [
-      { name: "Medicine / Panchakarma", y: 36, color: "#e84c3d" },
-      { name: "Surgery",                y: 23, color: "#f5a623" },
-      { name: "Gynecology",             y: 17, color: "#6abf6a" },
-      { name: "Pediatrics",             y: 12, color: "#38b2ac" },
-      { name: "Ophthalmology & ENT",    y:  8, color: "#805ad5" },
-      { name: "Other",                  y:  4, color: "#ed64a6" },
-    ],
-    genderByDept: [
-      { category: "Medicine / Panchakarma", male: 56, female: 44 },
-      { category: "Surgery",                male: 70, female: 30 },
-      { category: "Gynecology",             male: 19, female: 81 },
-      { category: "Pediatrics",             male: 49, female: 51 },
-      { category: "Ophthalmology & ENT",    male: 58, female: 42 },
-      { category: "Other",                  male: 51, female: 49 },
-    ],
-    conditions: {
-      medicine:   [{ name: "Diabetes", value: 128 }, { name: "Hypertension", value: 106 }, { name: "Asthma", value: 79 }, { name: "Heart Disease", value: 60 }, { name: "Paralysis", value: 35 }, { name: "Breathlessness", value: 67 }, { name: "Skin Disease", value: 86 }, { name: "Obesity", value: 74 }, { name: "Acidity", value: 99 }, { name: "Arthritis", value: 116 }, { name: "Thyroid", value: 53 }],
-      surgery:    [{ name: "Urine Disorder", value: 43 }, { name: "Hernia", value: 57 }, { name: "Hydrocele", value: 31 }, { name: "Cyst", value: 25 }, { name: "Kidney Stone", value: 83 }, { name: "Piles", value: 67 }, { name: "Fistula", value: 39 }, { name: "Corn", value: 17 }, { name: "Diabetic Wounds", value: 50 }],
-      gynecology: [{ name: "Menstrual Disorder", value: 94 }, { name: "Abnormal Vaginal Bleeding", value: 61 }, { name: "Uterine Prolapse", value: 37 }, { name: "Infertility", value: 81 }, { name: "White Discharge", value: 69 }, { name: "Cyst in Breast", value: 48 }, { name: "PCOD", value: 107 }, { name: "ANC", value: 86 }],
-      pediatrics: [{ name: "Allergic Rhinitis", value: 74 }, { name: "Malnourish Children", value: 50 }, { name: "Difficulty in Speech", value: 28 }, { name: "Convulsions", value: 24 }, { name: "Not Gaining Weight", value: 62 }, { name: "Cerebral Palsy", value: 16 }, { name: "Obesity in Children", value: 40 }, { name: "Mentally Deficient", value: 20 }, { name: "Other", value: 32 }],
-      ent:        [{ name: "Diminished Vision", value: 79 }, { name: "Discharge from Eye", value: 47 }, { name: "Sqint", value: 34 }, { name: "Pterygium", value: 26 }, { name: "Ear Discharge", value: 56 }, { name: "DNS", value: 39 }, { name: "Migraine", value: 67 }],
-    },
-  },
-  2024: {
-    totalPatients: 8460,
-    totalMale: 4820,
-    totalFemale: 3640,
-    opdMonthly:   [120, 145, 162, 180, 200, 175, 190, 210, 195, 220, 240, 260],
-    ipdMonthly:   [45,  52,  60,  70,  80,  65,  72,  85,  78,  90, 100, 115],
-    emgMonthly:   [20,  18,  25,  22,  30,  28,  32,  29,  35,  31,  38,  42],
-    depts: [
-      { name: "Medicine / Panchakarma", y: 38, color: "#e84c3d" },
-      { name: "Surgery",                y: 22, color: "#f5a623" },
-      { name: "Gynecology",             y: 16, color: "#6abf6a" },
-      { name: "Pediatrics",             y: 12, color: "#38b2ac" },
-      { name: "Ophthalmology & ENT",    y:  8, color: "#805ad5" },
-      { name: "Other",                  y:  4, color: "#ed64a6" },
-    ],
-    genderByDept: [
-      { category: "Medicine / Panchakarma", male: 55, female: 45 },
-      { category: "Surgery",                male: 68, female: 32 },
-      { category: "Gynecology",             male: 20, female: 80 },
-      { category: "Pediatrics",             male: 48, female: 52 },
-      { category: "Ophthalmology & ENT",    male: 57, female: 43 },
-      { category: "Other",                  male: 50, female: 50 },
-    ],
-    conditions: {
-      medicine:   [{ name: "Diabetes", value: 142 }, { name: "Hypertension", value: 118 }, { name: "Asthma", value: 87 }, { name: "Heart Disease", value: 64 }, { name: "Paralysis", value: 39 }, { name: "Breathlessness", value: 73 }, { name: "Skin Disease", value: 95 }, { name: "Obesity", value: 81 }, { name: "Acidity", value: 109 }, { name: "Arthritis", value: 126 }, { name: "Thyroid", value: 58 }],
-      surgery:    [{ name: "Urine Disorder", value: 47 }, { name: "Hernia", value: 62 }, { name: "Hydrocele", value: 34 }, { name: "Cyst", value: 28 }, { name: "Kidney Stone", value: 91 }, { name: "Piles", value: 74 }, { name: "Fistula", value: 43 }, { name: "Corn", value: 19 }, { name: "Diabetic Wounds", value: 55 }],
-      gynecology: [{ name: "Menstrual Disorder", value: 103 }, { name: "Abnormal Vaginal Bleeding", value: 67 }, { name: "Uterine Prolapse", value: 41 }, { name: "Infertility", value: 89 }, { name: "White Discharge", value: 76 }, { name: "Cyst in Breast", value: 53 }, { name: "PCOD", value: 118 }, { name: "ANC", value: 94 }],
-      pediatrics: [{ name: "Allergic Rhinitis", value: 82 }, { name: "Malnourish Children", value: 56 }, { name: "Difficulty in Speech", value: 31 }, { name: "Convulsions", value: 27 }, { name: "Not Gaining Weight", value: 69 }, { name: "Cerebral Palsy", value: 18 }, { name: "Obesity in Children", value: 44 }, { name: "Mentally Deficient", value: 22 }, { name: "Other", value: 35 }],
-      ent:        [{ name: "Diminished Vision", value: 88 }, { name: "Discharge from Eye", value: 52 }, { name: "Sqint", value: 37 }, { name: "Pterygium", value: 29 }, { name: "Ear Discharge", value: 61 }, { name: "DNS", value: 43 }, { name: "Migraine", value: 74 }],
-    },
-  },
-  2025: {
-    totalPatients: 9320,
-    totalMale: 5190,
-    totalFemale: 4130,
-    opdMonthly:   [138, 162, 185, 204, 226, 198, 215, 240, 222, 248, 272, 295],
-    ipdMonthly:   [52,  61,  70,  82,  94,  76,  84,  98,  90, 106, 118, 134],
-    emgMonthly:   [23,  21,  29,  26,  35,  32,  38,  33,  41,  36,  44,  49],
-    depts: [
-      { name: "Medicine / Panchakarma", y: 37, color: "#e84c3d" },
-      { name: "Surgery",                y: 21, color: "#f5a623" },
-      { name: "Gynecology",             y: 17, color: "#6abf6a" },
-      { name: "Pediatrics",             y: 13, color: "#38b2ac" },
-      { name: "Ophthalmology & ENT",    y:  8, color: "#805ad5" },
-      { name: "Other",                  y:  4, color: "#ed64a6" },
-    ],
-    genderByDept: [
-      { category: "Medicine / Panchakarma", male: 54, female: 46 },
-      { category: "Surgery",                male: 66, female: 34 },
-      { category: "Gynecology",             male: 21, female: 79 },
-      { category: "Pediatrics",             male: 47, female: 53 },
-      { category: "Ophthalmology & ENT",    male: 55, female: 45 },
-      { category: "Other",                  male: 49, female: 51 },
-    ],
-    conditions: {
-      medicine:   [{ name: "Diabetes", value: 158 }, { name: "Hypertension", value: 132 }, { name: "Asthma", value: 98 }, { name: "Heart Disease", value: 72 }, { name: "Paralysis", value: 44 }, { name: "Breathlessness", value: 82 }, { name: "Skin Disease", value: 108 }, { name: "Obesity", value: 94 }, { name: "Acidity", value: 122 }, { name: "Arthritis", value: 140 }, { name: "Thyroid", value: 66 }],
-      surgery:    [{ name: "Urine Disorder", value: 53 }, { name: "Hernia", value: 70 }, { name: "Hydrocele", value: 39 }, { name: "Cyst", value: 33 }, { name: "Kidney Stone", value: 104 }, { name: "Piles", value: 85 }, { name: "Fistula", value: 49 }, { name: "Corn", value: 23 }, { name: "Diabetic Wounds", value: 62 }],
-      gynecology: [{ name: "Menstrual Disorder", value: 116 }, { name: "Abnormal Vaginal Bleeding", value: 76 }, { name: "Uterine Prolapse", value: 47 }, { name: "Infertility", value: 101 }, { name: "White Discharge", value: 86 }, { name: "Cyst in Breast", value: 61 }, { name: "PCOD", value: 133 }, { name: "ANC", value: 108 }],
-      pediatrics: [{ name: "Allergic Rhinitis", value: 93 }, { name: "Malnourish Children", value: 64 }, { name: "Difficulty in Speech", value: 36 }, { name: "Convulsions", value: 31 }, { name: "Not Gaining Weight", value: 78 }, { name: "Cerebral Palsy", value: 21 }, { name: "Obesity in Children", value: 52 }, { name: "Mentally Deficient", value: 26 }, { name: "Other", value: 41 }],
-      ent:        [{ name: "Diminished Vision", value: 100 }, { name: "Discharge from Eye", value: 59 }, { name: "Sqint", value: 43 }, { name: "Pterygium", value: 33 }, { name: "Ear Discharge", value: 70 }, { name: "DNS", value: 50 }, { name: "Migraine", value: 85 }],
-    },
-  },
-  2026: {
-    totalPatients: 4880,
-    totalMale: 2720,
-    totalFemale: 2160,
-    opdMonthly:   [148, 172, 198, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ipdMonthly:   [56,  65,  76, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    emgMonthly:   [25,  23,  32, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    depts: [
-      { name: "Medicine / Panchakarma", y: 38, color: "#e84c3d" },
-      { name: "Surgery",                y: 20, color: "#f5a623" },
-      { name: "Gynecology",             y: 18, color: "#6abf6a" },
-      { name: "Pediatrics",             y: 13, color: "#38b2ac" },
-      { name: "Ophthalmology & ENT",    y:  7, color: "#805ad5" },
-      { name: "Other",                  y:  4, color: "#ed64a6" },
-    ],
-    genderByDept: [
-      { category: "Medicine / Panchakarma", male: 53, female: 47 },
-      { category: "Surgery",                male: 65, female: 35 },
-      { category: "Gynecology",             male: 22, female: 78 },
-      { category: "Pediatrics",             male: 46, female: 54 },
-      { category: "Ophthalmology & ENT",    male: 54, female: 46 },
-      { category: "Other",                  male: 48, female: 52 },
-    ],
-    conditions: {
-      medicine:   [{ name: "Diabetes", value: 82 }, { name: "Hypertension", value: 70 }, { name: "Asthma", value: 52 }, { name: "Heart Disease", value: 38 }, { name: "Paralysis", value: 23 }, { name: "Breathlessness", value: 43 }, { name: "Skin Disease", value: 57 }, { name: "Obesity", value: 49 }, { name: "Acidity", value: 64 }, { name: "Arthritis", value: 74 }, { name: "Thyroid", value: 35 }],
-      surgery:    [{ name: "Urine Disorder", value: 28 }, { name: "Hernia", value: 37 }, { name: "Hydrocele", value: 21 }, { name: "Cyst", value: 17 }, { name: "Kidney Stone", value: 55 }, { name: "Piles", value: 44 }, { name: "Fistula", value: 26 }, { name: "Corn", value: 12 }, { name: "Diabetic Wounds", value: 33 }],
-      gynecology: [{ name: "Menstrual Disorder", value: 61 }, { name: "Abnormal Vaginal Bleeding", value: 40 }, { name: "Uterine Prolapse", value: 25 }, { name: "Infertility", value: 53 }, { name: "White Discharge", value: 45 }, { name: "Cyst in Breast", value: 32 }, { name: "PCOD", value: 70 }, { name: "ANC", value: 57 }],
-      pediatrics: [{ name: "Allergic Rhinitis", value: 49 }, { name: "Malnourish Children", value: 34 }, { name: "Difficulty in Speech", value: 19 }, { name: "Convulsions", value: 16 }, { name: "Not Gaining Weight", value: 41 }, { name: "Cerebral Palsy", value: 11 }, { name: "Obesity in Children", value: 27 }, { name: "Mentally Deficient", value: 14 }, { name: "Other", value: 22 }],
-      ent:        [{ name: "Diminished Vision", value: 53 }, { name: "Discharge from Eye", value: 31 }, { name: "Sqint", value: 23 }, { name: "Pterygium", value: 17 }, { name: "Ear Discharge", value: 37 }, { name: "DNS", value: 26 }, { name: "Migraine", value: 45 }],
-    },
-  },
-};
+// ── Helper to process raw API data ───────────────────────────────────────────
 
-const AVAILABLE_YEARS = Object.keys(YEAR_DATA).map(Number).sort();
+// ── Helper to process raw API data ───────────────────────────────────────────
+function processReportData(rawData) {
+  const years = {};
+
+  rawData.forEach((item) => {
+    // Extract year and month from timestamp (format: MM/DD/YYYY HH:MM:SS)
+    const timestamp = item.timestamp || "";
+    const datePart = timestamp.split(" ")[0] || "";
+    const dateParts = datePart.split("/");
+    
+    if (dateParts.length < 3) return;
+
+    const year = parseInt(dateParts[2]);
+    const month = parseInt(dateParts[0]) - 1; // 0-indexed month
+
+    // Only add valid years (ignore 2006, 2-digit years like 26, etc.)
+    if (isNaN(year) || year < 2020 || year > 2030) return;
+
+    if (!years[year]) {
+      years[year] = {
+        totalPatients: 0, totalMale: 0, totalFemale: 0,
+        opdMonthly: Array(12).fill(0), ipdMonthly: Array(12).fill(0), emgMonthly: Array(12).fill(0),
+        depts: [
+          { name: "Medicine / Panchakarma", y: 0, color: "#e84c3d" },
+          { name: "Surgery", y: 0, color: "#f5a623" },
+          { name: "Gynecology", y: 0, color: "#6abf6a" },
+          { name: "Pediatrics", y: 0, color: "#38b2ac" },
+          { name: "Ophthalmology & ENT", y: 0, color: "#805ad5" },
+          { name: "Other", y: 0, color: "#ed64a6" },
+        ],
+        genderByDeptMap: {}, // Intermediate map for gender splitting
+        conditionsMap: {
+          medicine: {}, surgery: {}, gynecology: {}, pediatrics: {}, ent: {}
+        }
+      };
+    }
+
+    const yData = years[year];
+    yData.totalPatients++;
+
+    // Gender counts
+    const gender = item.gender?.toLowerCase();
+    if (gender === "male") yData.totalMale++;
+    else if (gender === "female") yData.totalFemale++;
+
+    // Monthly data (using total as OPD since distinction is missing)
+    if (month >= 0 && month < 12) yData.opdMonthly[month]++;
+
+    // Department & Condition Mapping
+    const deptFields = [
+      { field: "medicinePanchakarma", name: "Medicine / Panchakarma", id: "medicine" },
+      { field: "surgery", name: "Surgery", id: "surgery" },
+      { field: "gynecology", name: "Gynecology", id: "gynecology" },
+      { field: "pediatrics", name: "Pediatrics", id: "pediatrics" },
+      { field: "ophthalmologyEnt", name: "Ophthalmology & ENT", id: "ent" },
+    ];
+
+    let foundDept = false;
+    deptFields.forEach((df) => {
+      if (item[df.field]) {
+        foundDept = true;
+        const d = yData.depts.find(dept => dept.name === df.name);
+        if (d) d.y++;
+
+        // Tracking conditions
+        const condition = item[df.field];
+        if (condition) {
+          yData.conditionsMap[df.id][condition] = (yData.conditionsMap[df.id][condition] || 0) + 1;
+        }
+
+        // Tracking gender by dept
+        if (!yData.genderByDeptMap[df.name]) yData.genderByDeptMap[df.name] = { male: 0, female: 0 };
+        if (gender === "male") yData.genderByDeptMap[df.name].male++;
+        else if (gender === "female") yData.genderByDeptMap[df.name].female++;
+      }
+    });
+
+    if (!foundDept) {
+      const other = yData.depts.find(dept => dept.name === "Other");
+      if (other) other.y++;
+    }
+  });
+
+  // Final transformation for Highcharts (percentages/arrays)
+  Object.keys(years).forEach((y) => {
+    const yData = years[y];
+    const total = yData.totalPatients || 1;
+
+    // Convert depts to percentages
+    yData.depts.forEach(d => {
+      d.y = parseFloat(((d.y / total) * 100).toFixed(1));
+    });
+
+    // Convert genderByDeptMap to array
+    yData.genderByDept = Object.keys(yData.genderByDeptMap).map(catName => {
+      const counts = yData.genderByDeptMap[catName];
+      const deptTotal = (counts.male + counts.female) || 1;
+      return {
+        category: catName,
+        male: Math.round((counts.male / deptTotal) * 100),
+        female: Math.round((counts.female / deptTotal) * 100)
+      };
+    });
+
+    // Convert conditionsMap to arrays of { name, value }
+    yData.conditions = {};
+    Object.keys(yData.conditionsMap).forEach(deptId => {
+      yData.conditions[deptId] = Object.keys(yData.conditionsMap[deptId]).map(condName => ({
+        name: condName,
+        value: yData.conditionsMap[deptId][condName]
+      }));
+    });
+  });
+
+  return years;
+}
+
 const DEPT_CATEGORY_META = [
-  { id: "medicine",   title: "Medicine / Panchakarma", icon: <PillBottleIcon />, color: "#6366F1", lightColor: "#EEF2FF" },
-  { id: "surgery",    title: "Surgery",                icon: <Microscope />,     color: "#F59E0B", lightColor: "#FFFBEB" },
-  { id: "gynecology", title: "Gynecology",             icon: <Flower />,         color: "#EC4899", lightColor: "#FDF2F8" },
-  { id: "pediatrics", title: "Pediatrics",             icon: <Baby />,           color: "#10B981", lightColor: "#ECFDF5" },
-  { id: "ent",        title: "Ophthalmology & ENT",    icon: <Eye />,            color: "#0EA5E9", lightColor: "#F0F9FF" },
+  { id: "medicine", title: "Medicine / Panchakarma", icon: <PillBottleIcon />, color: "#6366F1", lightColor: "#EEF2FF" },
+  { id: "surgery", title: "Surgery", icon: <Microscope />, color: "#F59E0B", lightColor: "#FFFBEB" },
+  { id: "gynecology", title: "Gynecology", icon: <Flower />, color: "#EC4899", lightColor: "#FDF2F8" },
+  { id: "pediatrics", title: "Pediatrics", icon: <Baby />, color: "#10B981", lightColor: "#ECFDF5" },
+  { id: "ent", title: "Ophthalmology & ENT", icon: <Eye />, color: "#0EA5E9", lightColor: "#F0F9FF" },
 ];
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────
@@ -219,9 +180,16 @@ function DeptPieChart({ depts }) {
 
   useHighcharts((HC) => {
     if (!ref.current) return;
-    if (instanceRef.current) { instanceRef.current.destroy(); }
+    try {
+      if (instanceRef.current && typeof instanceRef.current.destroy === "function") {
+        instanceRef.current.destroy();
+      }
+    } catch (e) {
+      console.warn("Highcharts destroy error (DeptPieChart):", e);
+    }
+    
     instanceRef.current = HC.chart(ref.current, {
-      chart: { type: "pie", backgroundColor: "transparent", height: 200, margin: [0,0,0,0], spacing: [4,4,4,4] },
+      chart: { type: "pie", backgroundColor: "transparent", height: 200, margin: [0, 0, 0, 0], spacing: [4, 4, 4, 4] },
       title: { text: null },
       credits: { enabled: false },
       tooltip: { pointFormat: "<b>{point.name}</b>: {point.y}%", backgroundColor: "#fff", borderRadius: 10, borderWidth: 0, shadow: true },
@@ -234,9 +202,16 @@ function DeptPieChart({ depts }) {
 
   useEffect(() => {
     if (!ref.current || !window.Highcharts) return;
-    if (instanceRef.current) { instanceRef.current.destroy(); }
+    try {
+      if (instanceRef.current && typeof instanceRef.current.destroy === "function") {
+        instanceRef.current.destroy();
+      }
+    } catch (e) {
+      // already destroyed
+    }
+    
     instanceRef.current = window.Highcharts.chart(ref.current, {
-      chart: { type: "pie", backgroundColor: "transparent", height: 200, margin: [0,0,0,0], spacing: [4,4,4,4] },
+      chart: { type: "pie", backgroundColor: "transparent", height: 200, margin: [0, 0, 0, 0], spacing: [4, 4, 4, 4] },
       title: { text: null },
       credits: { enabled: false },
       tooltip: { pointFormat: "<b>{point.name}</b>: {point.y}%", backgroundColor: "#fff", borderRadius: 10, borderWidth: 0, shadow: true },
@@ -277,13 +252,20 @@ function MonthlyBarChart({ opd, ipd, emg }) {
 
   const renderChart = (HC) => {
     if (!ref.current) return;
-    if (instanceRef.current) { instanceRef.current.destroy(); }
+    try {
+      if (instanceRef.current && typeof instanceRef.current.destroy === "function") {
+        instanceRef.current.destroy();
+      }
+    } catch (e) {
+      console.warn("Highcharts destroy error (MonthlyBarChart):", e);
+    }
+    
     instanceRef.current = HC.chart(ref.current, {
-      chart: { type: "column", backgroundColor: "transparent", height: 210, spacing: [8,6,8,4] },
+      chart: { type: "column", backgroundColor: "transparent", height: 210, spacing: [8, 6, 8, 4] },
       title: { text: null },
       credits: { enabled: false },
       xAxis: {
-        categories: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         labels: { style: { fontSize: "9px", color: "#9ca3af" } },
         lineColor: "#e5e7eb", tickColor: "transparent",
       },
@@ -292,8 +274,8 @@ function MonthlyBarChart({ opd, ipd, emg }) {
       tooltip: { shared: true, backgroundColor: "#fff", borderRadius: 10, borderWidth: 0, shadow: true, valueSuffix: " entries" },
       plotOptions: { column: { borderRadius: 4, groupPadding: 0.1, pointPadding: 0.04, animation: { duration: 700 } } },
       series: [
-        { name: "OPD",       color: "#f5a623", data: opd },
-        { name: "IPD",       color: "#38b2ac", data: ipd },
+        { name: "OPD", color: "#f5a623", data: opd },
+        { name: "IPD", color: "#38b2ac", data: ipd },
         { name: "Emergency", color: "#e84c3d", data: emg },
       ],
     });
@@ -317,7 +299,7 @@ function GenderBarChart({ genderData, maleTotal, femaleTotal }) {
   const buildSeries = (filter) => {
     const series = [];
     if (filter === "All" || filter === "Male")
-      series.push({ name: "Male",   data: genderData.map((d) => d.male),   color: "#3B82F6", borderRadius: 6, borderWidth: 0 });
+      series.push({ name: "Male", data: genderData.map((d) => d.male), color: "#3B82F6", borderRadius: 6, borderWidth: 0 });
     if (filter === "All" || filter === "Female")
       series.push({ name: "Female", data: genderData.map((d) => d.female), color: "#EC4899", borderRadius: 6, borderWidth: 0 });
     return series;
@@ -325,9 +307,16 @@ function GenderBarChart({ genderData, maleTotal, femaleTotal }) {
 
   const renderChart = (HC, filter) => {
     if (!chartRef.current) return;
-    if (chartInstanceRef.current) { chartInstanceRef.current.destroy(); }
+    try {
+      if (chartInstanceRef.current && typeof chartInstanceRef.current.destroy === "function") {
+        chartInstanceRef.current.destroy();
+      }
+    } catch (e) {
+      console.warn("Highcharts destroy error (GenderBarChart):", e);
+    }
+    
     chartInstanceRef.current = HC.chart(chartRef.current, {
-      chart: { type: "bar", backgroundColor: "transparent", animation: { duration: 600 }, spacing: [10,10,10,10], height: 260 },
+      chart: { type: "bar", backgroundColor: "transparent", animation: { duration: 600 }, spacing: [10, 10, 10, 10], height: 260 },
       title: { text: null },
       credits: { enabled: false },
       legend: { enabled: true, align: "right", verticalAlign: "top", itemStyle: { color: "#6B7280", fontWeight: "500", fontSize: "11px" }, symbolRadius: 4, symbolWidth: 10, symbolHeight: 10 },
@@ -405,9 +394,17 @@ function CategoryChart({ category, isVisible }) {
     if (!isVisible || !chartRef.current || !window.Highcharts) return;
     const H = window.Highcharts;
     const sorted = [...category.data].sort((a, b) => b.value - a.value);
-    if (instanceRef.current) instanceRef.current.destroy();
+    
+    try {
+      if (instanceRef.current && typeof instanceRef.current.destroy === "function") {
+        instanceRef.current.destroy();
+      }
+    } catch (e) {
+      console.warn("Highcharts destroy error (CategoryChart):", e);
+    }
+
     instanceRef.current = H.chart(chartRef.current, {
-      chart: { type: "bar", backgroundColor: "transparent", style: { fontFamily: "'Outfit', sans-serif" }, animation: { duration: 700 }, spacing: [0,10,0,0], height: Math.max(300, sorted.length * 38 + 40) },
+      chart: { type: "bar", backgroundColor: "transparent", style: { fontFamily: "'Outfit', sans-serif" }, animation: { duration: 700 }, spacing: [0, 10, 0, 0], height: Math.max(300, sorted.length * 38 + 40) },
       title: { text: null },
       credits: { enabled: false },
       legend: { enabled: false },
@@ -428,7 +425,16 @@ function CategoryChart({ category, isVisible }) {
       },
       series: [{ name: "Patients", data: sorted.map((d) => d.value) }],
     });
-    return () => { if (instanceRef.current) instanceRef.current.destroy(); };
+    return () => {
+      try {
+        if (instanceRef.current && typeof instanceRef.current.destroy === "function") {
+          instanceRef.current.destroy();
+          instanceRef.current = null;
+        }
+      } catch (e) {
+        // already destroyed
+      }
+    };
   }, [isVisible, category]);
 
   const total = category.data.reduce((s, d) => s + d.value, 0);
@@ -453,7 +459,9 @@ function CategoryChart({ category, isVisible }) {
             <div className="w-px h-10 self-center" style={{ background: category.color + "30" }} />
             <div className="text-right max-w-[140px]">
               <p className="text-xs text-gray-400 font-medium">Top Condition</p>
-              <p className="text-sm font-semibold text-gray-700 leading-tight mt-0.5 truncate" title={topCondition.name}>{topCondition.name}</p>
+              <p className="text-sm font-semibold text-gray-700 leading-tight mt-0.5 truncate" title={topCondition?.name || "N/A"}>
+                {topCondition?.name || "No records"}
+              </p>
             </div>
           </div>
         </div>
@@ -470,13 +478,21 @@ function CategoryChart({ category, isVisible }) {
 }
 
 // ── 5. Medical Conditions Dashboard ──────────────────────────────────────────
-function MedicalConditionsDashboard({ conditions }) {
+function MedicalConditionsDashboard({ conditions, isPrinting }) {
   const [visibleCharts, setVisibleCharts] = useState(new Set());
   const [activeTab, setActiveTab] = useState("all");
   const catRefs = useRef({});
 
   // Reset visible charts when conditions change (year change)
   useEffect(() => { setVisibleCharts(new Set()); }, [conditions]);
+
+  // Force all charts visible during printing
+  useEffect(() => {
+    if (isPrinting) {
+      const allIds = DEPT_CATEGORY_META.map(m => m.id);
+      setVisibleCharts(new Set(allIds));
+    }
+  }, [isPrinting]);
 
   const CATEGORIES = useMemo(() =>
     DEPT_CATEGORY_META.map((m) => ({ ...m, data: conditions[m.id] || [] })),
@@ -517,8 +533,8 @@ function MedicalConditionsDashboard({ conditions }) {
           <div className="flex gap-4 flex-wrap">
             {[
               { label: "Total Patients", value: totalPatients.toLocaleString(), color: "#818CF8" },
-              { label: "Conditions",     value: totalConditions,                 color: "#34D399" },
-              { label: "Departments",    value: CATEGORIES.length,               color: "#FB7185" },
+              { label: "Conditions", value: totalConditions, color: "#34D399" },
+              { label: "Departments", value: CATEGORIES.length, color: "#FB7185" },
             ].map((kpi) => (
               <div key={kpi.label} className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-center backdrop-blur-sm">
                 <p className="text-xl font-bold" style={{ color: kpi.color }}>{kpi.value}</p>
@@ -558,14 +574,112 @@ function MedicalConditionsDashboard({ conditions }) {
 
 // ── MAIN DASHBOARD ────────────────────────────────────────────────────────────
 export default function Report() {
-  const currentYear = new Date().getFullYear();
-  const defaultYear = AVAILABLE_YEARS.includes(currentYear) ? currentYear : AVAILABLE_YEARS[AVAILABLE_YEARS.length - 1];
-  const [selectedYear, setSelectedYear] = useState(defaultYear);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dashboardData, setDashboardData] = useState({}); 
+  const [availableYears, setAvailableYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const reportRef = useRef(null);
+  const Base_URL = import.meta.env.VITE_BACKEND_API_URL;
 
-  const data = YEAR_DATA[selectedYear];
-  const prevData = YEAR_DATA[selectedYear - 1];
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current || isDownloading) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      // Small delay to ensure any layout shifts/chart force-renders resolve
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const element = reportRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher resolution
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#e2e8f0", 
+        windowWidth: 1400, 
+        onclone: (clonedDoc) => {
+          // html2canvas crashes on OKLCH colors (Tailwind v4 default). 
+          // We convert them to hex in the cloned document.
+          const elements = clonedDoc.querySelectorAll('*');
+          for (const el of elements) {
+            const style = window.getComputedStyle(el);
+            const colorProps = ['backgroundColor', 'color', 'borderColor', 'fill', 'stroke', 'textDecorationColor', 'textShadow'];
+            
+            for (const prop of colorProps) {
+              if (style[prop] && style[prop].includes('oklch')) {
+                if (prop === 'fill' || prop === 'stroke' || prop === 'color') el.style[prop] = '#1e293b';
+                else el.style[prop] = '#f1f5f9';
+              }
+            }
+            if (style.boxShadow && style.boxShadow.includes('oklch')) {
+              el.style.boxShadow = 'none'; // Easiest fix for shadow parser crashing
+            }
+          }
+        }
+      });
+      
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [canvas.width / 2, canvas.height / 2] // Native scale
+      });
+      
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`AyurAI_Report_${selectedYear}.pdf`);
+    } catch (err) {
+      console.error("PDF Export failed:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
-  const malePercent = Math.round((data.totalMale / data.totalPatients) * 100);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${Base_URL}/api/csv/recivedData`, {
+          // Optional: add token if required
+          // headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          const processed = processReportData(response.data);
+          setDashboardData(processed);
+
+          const years = Object.keys(processed).map(Number).sort();
+          setAvailableYears(years);
+
+          // Re-select year if current selection isn't in available years
+          if (!years.includes(selectedYear)) {
+            setSelectedYear(years[years.length - 1]);
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch report data:", err);
+        setError("Could not load real-time analytics. Please check your connection.");
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const data = (selectedYear ? dashboardData[selectedYear] : null) || Object.values(dashboardData)[0];
+  if (!data) {
+    if (loading) return (
+      <div className="flex h-[80vh] items-center justify-center bg-slate-200 rounded-2xl p-2 font-sans text-gray-900 text-[13px]">
+           <Loader2 className="animate-spin text-emerald-600" size={32} />
+      </div>
+    );
+    return <div className="flex items-center justify-center p-20 text-gray-500">No data available. Please upload a CSV first.</div>;
+  }
+
+  const prevData = dashboardData[selectedYear - 1];
+
+  const malePercent = data.totalPatients > 0 ? Math.round((data.totalMale / data.totalPatients) * 100) : 0;
   const femalePercent = 100 - malePercent;
 
   const totalOPD = data.opdMonthly.reduce((a, b) => a + b, 0);
@@ -573,33 +687,56 @@ export default function Report() {
 
   return (
     <div className="flex min-h-screen bg-slate-200 rounded-2xl p-2 font-sans text-gray-900 text-[13px]">
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main ref={reportRef} className="flex-1 p-6 overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight leading-none">Report</h1>
-            <p className="text-gray-400 text-xs mt-1">Annual statistics — fiscal year {selectedYear}</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight leading-none">Report</h1>
+              <p className="text-gray-400 text-xs mt-1">Annual statistics — fiscal year {selectedYear}</p>
+            </div>
+            {loading && <Loader2 className="animate-spin text-emerald-600" size={24} />}
+            {error && <p className="text-amber-600 text-[10px] font-medium bg-amber-50 px-2 py-1 rounded-lg">{error}</p>}
           </div>
 
-          {/* Year Selector */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            {/* Download Button */}
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 shadow-sm border ${
+                isDownloading 
+                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                : "bg-white text-gray-800 border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+              }`}
+            >
+              {isDownloading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Download size={16} />
+              )}
+              {isDownloading ? "Generating PDF..." : "Download Report"}
+            </button>
+
+            {/* Year Selector */}
+            <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-2.5">
               <CalendarDays size={16} className="text-emerald-600" />
               <span className="text-xs font-semibold text-gray-500 mr-1">Year</span>
               <div className="flex gap-1">
-                {AVAILABLE_YEARS.map((y) => (
+                {availableYears.map((y) => (
                   <button
                     key={y}
                     onClick={() => setSelectedYear(y)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                      selectedYear === y
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${selectedYear === y
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-200"
                         : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                    }`}
+                      }`}
                   >{y}</button>
                 ))}
               </div>
+            </div>
             </div>
           </div>
 
@@ -607,14 +744,14 @@ export default function Report() {
           <div className="flex gap-8 flex-wrap">
             {[
               { num: data.totalPatients.toLocaleString(), badge: `${malePercent}% M`, label: "Total Patients", prev: prevData?.totalPatients },
-              { num: totalOPD.toLocaleString(),           badge: "OPD",               label: "Annual OPD",     prev: prevData ? prevData.opdMonthly.reduce((a,b)=>a+b,0) : null },
+              { num: totalOPD.toLocaleString(), badge: "OPD", label: "Annual OPD", prev: prevData ? prevData.opdMonthly.reduce((a, b) => a + b, 0) : null },
             ].map((s) => (
               <div key={s.label}>
                 <div className="text-4xl font-extrabold tracking-tight leading-none">{s.num}</div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="bg-gray-900 text-white rounded-md px-2 py-0.5 text-[11px] font-semibold">{s.badge}</span>
                   <span className="text-gray-400 text-xs">{s.label}</span>
-                  {s.prev && <GrowthBadge current={parseInt(s.num.replace(/,/g,""))} previous={s.prev} />}
+                  {s.prev && <GrowthBadge current={parseInt(s.num.replace(/,/g, ""))} previous={s.prev} />}
                 </div>
               </div>
             ))}
@@ -624,16 +761,16 @@ export default function Report() {
         {/* Statistical Summary Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {[
-            { label: "Total Patients",  value: data.totalPatients.toLocaleString(), prev: prevData?.totalPatients,  color: "bg-indigo-50 border-indigo-100", text: "text-indigo-700", sub: "text-indigo-400" },
-            { label: "Male Patients",   value: data.totalMale.toLocaleString(),     prev: prevData?.totalMale,      color: "bg-blue-50 border-blue-100",    text: "text-blue-700",   sub: "text-blue-400"   },
-            { label: "Female Patients", value: data.totalFemale.toLocaleString(),   prev: prevData?.totalFemale,    color: "bg-pink-50 border-pink-100",    text: "text-pink-700",   sub: "text-pink-400"   },
-            { label: "Annual OPD",      value: totalOPD.toLocaleString(),           prev: prevData ? prevData.opdMonthly.reduce((a,b)=>a+b,0) : null, color: "bg-amber-50 border-amber-100", text: "text-amber-700", sub: "text-amber-400" },
+            { label: "Total Patients", value: data.totalPatients.toLocaleString(), prev: prevData?.totalPatients, color: "bg-indigo-50 border-indigo-100", text: "text-indigo-700", sub: "text-indigo-400" },
+            { label: "Male Patients", value: data.totalMale.toLocaleString(), prev: prevData?.totalMale, color: "bg-blue-50 border-blue-100", text: "text-blue-700", sub: "text-blue-400" },
+            { label: "Female Patients", value: data.totalFemale.toLocaleString(), prev: prevData?.totalFemale, color: "bg-pink-50 border-pink-100", text: "text-pink-700", sub: "text-pink-400" },
+            { label: "Annual OPD", value: totalOPD.toLocaleString(), prev: prevData ? prevData.opdMonthly.reduce((a, b) => a + b, 0) : null, color: "bg-amber-50 border-amber-100", text: "text-amber-700", sub: "text-amber-400" },
           ].map((kpi) => (
             <div key={kpi.label} className={`rounded-2xl border p-4 ${kpi.color}`}>
               <p className={`text-xs font-semibold mb-1 ${kpi.sub}`}>{kpi.label}</p>
               <p className={`text-2xl font-extrabold ${kpi.text}`}>{kpi.value}</p>
               {kpi.prev && (
-                <GrowthBadge current={parseInt(kpi.value.replace(/,/g,""))} previous={kpi.prev} />
+                <GrowthBadge current={parseInt(kpi.value.replace(/,/g, ""))} previous={kpi.prev} />
               )}
             </div>
           ))}
@@ -662,8 +799,9 @@ export default function Report() {
         </div>
 
         {/* Disease Conditions Dashboard */}
-        <MedicalConditionsDashboard conditions={data.conditions} />
+        <MedicalConditionsDashboard conditions={data.conditions} isPrinting={isDownloading} />
 
+      <Footer/>
       </main>
     </div>
   );

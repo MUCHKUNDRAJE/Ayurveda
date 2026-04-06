@@ -49,7 +49,7 @@ export default function Sidebar() {
             <Sparkles size={18} color="white" />
           </div>
           <div>
-            <div style={{  fontWeight: 700, fontSize: "1.1rem", color: "black", lineHeight: 1 }}>Ayurveda</div>
+            <div style={{  fontWeight: 700, fontSize: "1.1rem", color: "black", lineHeight: 1 }}>Ayururja</div>
             <div style={{ fontSize: "0.65rem", color: "#4CAF50", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>Wellness Platform</div>
           </div>
         </div>

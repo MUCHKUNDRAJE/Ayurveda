@@ -4,7 +4,9 @@ import {
   Leaf, Stethoscope, Zap, Heart, ArrowRight, 
   Activity, User, Clock, Star, TrendingUp
 } from "lucide-react";
+import Footer from '@/components/shared/Footer';
 
+const Base_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 const STATS = [
   { icon: Activity, label: "Total Patient", value: "820+", unit: "Patients", color: "#4CAF50" },
@@ -76,7 +78,7 @@ export default function Dashboard() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <header style={{ marginBottom: "20px" }}>
-          <h1 style={{ fontSize: "35px", fontWeight: "800", color: "#1e293b", margin: 20 }}>
+          <h1 className='-mt-10' style={{ fontSize: "35px", fontWeight: "800", color: "#1e293b", }}>
             Dashboard
           </h1>
         </header>
@@ -244,6 +246,8 @@ export default function Dashboard() {
         .vibrant-card { transition: transform 0.3s ease; }
         .vibrant-card:hover { transform: translateY(-8px); }
       `}</style>
+
+      <Footer/>
     </div>
   );
 }
